@@ -26,13 +26,21 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-12">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Composite
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Growth techniques from other industries — see if one fits your business.
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
+            Composite
+          </h1>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Growth techniques from other industries — see if one fits your business.
+          </p>
+        </div>
+        <Link
+          href="/diagnose"
+          className="shrink-0 rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-black dark:border-zinc-700 dark:text-zinc-50"
+        >
+          Diagnose a problem
+        </Link>
       </header>
 
       <div className="flex flex-wrap gap-3">
