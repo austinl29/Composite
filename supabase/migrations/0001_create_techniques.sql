@@ -9,6 +9,7 @@ create table techniques (
   evidence text not null,
   target_verticals text[] not null default '{}',
   transfer_template text not null,
+  problem_type text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

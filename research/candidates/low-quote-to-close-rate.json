@@ -1,0 +1,39 @@
+{
+  "problemType": "low quote-to-close rate",
+  "generatedAt": "2026-07-24T01:19:41Z",
+  "candidates": [
+    {
+      "name": "Show, Don't Just Tell, the Quote",
+      "sourceIndustry": "B2B sales / proposal software",
+      "sourceCompany": "Proposify",
+      "mechanism": "A static PDF or paper quote gets skimmed once and forgotten. A short personal video walking through the work and the price re-humanizes an otherwise generic document and keeps the customer engaged with it longer.",
+      "evidence": "Proposify's State of Proposals research, reported by Vidyard, found proposals that included video closed at up to 41% higher rates, closed 26% faster, and drove 56% higher engagement than proposals without video.",
+      "targetVerticals": ["plumbing", "HVAC", "roofing", "remodeling", "electrical"],
+      "transferTemplate": "Instead of texting or emailing a flat PDF quote, send a short (2-3 minute) personal video alongside it: the technician standing at the job site explaining what's being fixed, why it costs what it costs, and what happens next. It turns a document the customer has to interpret alone into something that feels like the visit continuing after you've left.",
+      "sourceUrl": "https://www.vidyard.com/blog/sales-proposals-and-negotiations/",
+      "status": "candidate"
+    },
+    {
+      "name": "Three Options, One Obvious Middle",
+      "sourceIndustry": "publishing / media",
+      "sourceCompany": "The Economist",
+      "mechanism": "A middle option flanked by a bare-bones option and a premium option makes the middle choice feel like the safe, obviously reasonable pick. A single take-it-or-leave-it price instead invites a yes/no decision, which makes 'let me think about it' or 'let me shop around' the easy default.",
+      "evidence": "When The Economist added a print-only subscription priced the same as its print+web bundle, alongside a cheaper web-only option, the added 'decoy' option shifted the mix toward the bundle and overall subscription sales rose by about 43%, according to the widely cited account of this pricing test.",
+      "targetVerticals": ["HVAC", "roofing", "solar", "remodeling", "landscaping"],
+      "transferTemplate": "Instead of one number on the quote, offer three tiers — e.g. 'basic repair,' 'repair + tune-up,' and 'full replacement.' Price the middle option so it's clearly the practical choice next to the other two: most customers won't pick the cheapest or the priciest, they'll pick the one that feels like the safe middle, and the quote stops being a plain yes/no decision.",
+      "sourceUrl": "https://thestrategystory.com/2020/10/02/economist-magazine-a-story-of-clever-decoy-pricing/",
+      "status": "candidate"
+    },
+    {
+      "name": "This Price Holds for 7 Days",
+      "sourceIndustry": "e-commerce / retail",
+      "sourceCompany": "Bob & Lush",
+      "mechanism": "A decision with no deadline gets deferred indefinitely. A clear, real deadline on an offer forces the decision to happen at the point of maximum interest, instead of drifting until the customer forgets or moves on.",
+      "evidence": "An e-commerce case study for pet supply retailer Bob & Lush found that adding a genuine urgency message to product pages (free next-day delivery if ordered by 4pm) produced a 27.1% revenue uplift and a 9.5% increase in checkout visits, measured over a 42-day test at 95% confidence.",
+      "targetVerticals": ["plumbing", "HVAC", "roofing", "pest control", "appliance repair"],
+      "transferTemplate": "Put a real, honest deadline on the quote itself — 'this price is valid through [date] because material costs are re-quoted weekly' or 'this install slot is held for 48 hours.' The deadline has to be true, not a fake countdown, but a genuine one gives the customer a reason to decide now instead of letting 'I'll think about it' turn into never.",
+      "sourceUrl": "https://speero.com/post/implementing-urgency-on-ecommerce-product-pages-for-a-27-1-lift-case-study",
+      "status": "approved"
+    }
+  ]
+}

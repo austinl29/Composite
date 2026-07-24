@@ -1,0 +1,39 @@
+{
+  "problemType": "no repeat or referral business",
+  "generatedAt": "2026-07-24T01:24:01Z",
+  "candidates": [
+    {
+      "name": "Give Both Sides a Reason to Talk About You",
+      "sourceIndustry": "cloud storage / SaaS",
+      "sourceCompany": "Dropbox",
+      "mechanism": "A referral ask with nothing in it for the referrer relies purely on goodwill and gets ignored. Making the reward mutual, so both the referrer and the new customer get something real, turns 'know anyone who needs this?' into something worth actually doing.",
+      "evidence": "Dropbox's referral program gave both the referring user and the new signup free storage for every successful invite. The company grew from 100,000 to 4 million users (3,900% growth) in 15 months, and referrals eventually accounted for 35% of daily signups — more than 2.8x what paid acquisition was driving at the time.",
+      "targetVerticals": ["landscaping", "pest control", "HVAC", "plumbing", "general contracting"],
+      "transferTemplate": "Instead of a generic 'refer a friend' ask, give both people something concrete: the customer who refers a neighbor gets, say, $50 off their next service, and the neighbor gets $50 off their first one. A referral ask that only benefits you gets forgotten; one that benefits both people gets acted on.",
+      "sourceUrl": "https://growsurf.com/blog/dropbox-referral-program",
+      "status": "approved"
+    },
+    {
+      "name": "Make Coming Back Worth Something",
+      "sourceIndustry": "food & beverage retail",
+      "sourceCompany": "Starbucks",
+      "mechanism": "Without a visible, accumulating reason to return to the same provider, a satisfied customer has no particular reason not to try somewhere else next time. A program that visibly tracks and rewards repeat visits gives loyalty itself a payoff.",
+      "evidence": "Starbucks Rewards members generate roughly 40% of the brand's UK revenue through repeat visits, and the program's introduction was tied to a 7% uptick in sales; in the US, Rewards members now account for over half of all Starbucks store sales.",
+      "targetVerticals": ["HVAC", "pest control", "landscaping", "pool service", "appliance repair"],
+      "transferTemplate": "For services with a natural repeat cycle (annual HVAC tune-up, quarterly pest control, seasonal landscaping), track it and reward it visibly: 'this is your 3rd service with us — your 4th includes a free filter' or a simple punch-card-style discount for repeat customers. The point isn't the discount size, it's giving the customer something they'd be giving up by switching to someone else.",
+      "sourceUrl": "https://loyaltylion.com/blog/scale-success-story-starbucks-rewards-program",
+      "status": "approved"
+    },
+    {
+      "name": "Treat Repeat Business as a Line Item, Not an Afterthought",
+      "sourceIndustry": "management consulting / cross-industry research",
+      "sourceCompany": null,
+      "mechanism": "Businesses tend to spend heavily and deliberately on winning new customers but leave keeping existing ones to chance, even though a returning customer is dramatically cheaper to keep than a new one is to win, and a small improvement in retention rate has an outsized effect on profit.",
+      "evidence": "Bain & Company's research found that increasing customer retention by as little as 5% can increase profit by as much as 95%, because retained customers buy more over time, cost less to serve, and refer others.",
+      "targetVerticals": ["general contracting", "remodeling", "HVAC", "plumbing", "roofing"],
+      "transferTemplate": "Put a real, budgeted process behind staying in touch with past customers, the same way you budget for lead generation: a maintenance reminder at the right seasonal interval, a check-in call a year after a big job, a small thank-you after a referral. The math behind this isn't intuitive — a modest improvement in how many past customers come back or refer someone is worth far more than it looks like from any single job.",
+      "sourceUrl": "https://www.bain.com/insights/retaining-customers-is-the-real-challenge/",
+      "status": "approved"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "problemType": "price-shopping / commoditized pricing pressure",
+  "generatedAt": "2026-07-24T01:27:55Z",
+  "candidates": [
+    {
+      "name": "Sell the Outcome, Not the Part",
+      "sourceIndustry": "aerospace / industrial manufacturing",
+      "sourceCompany": "Rolls-Royce",
+      "mechanism": "When you sell the physical unit itself (an engine, a repair, an install), it's directly comparable to every competitor's version of the same unit, so price becomes the only variable left to compare. Pricing around the outcome the customer actually wants instead, rather than the part, means there's no equivalent line item for a competitor's price to be compared against.",
+      "evidence": "Rolls-Royce's TotalCare program charges airlines a fixed rate per flying hour rather than selling the engine and its maintenance separately. Rolls-Royce is only paid when the engine performs, which pushed them to extend service intervals between overhauls by around 25%, and led to contracts running 10-20+ years instead of one-time equipment sales.",
+      "targetVerticals": ["HVAC", "solar", "pool service", "pest control"],
+      "transferTemplate": "Instead of quoting 'a new AC unit, installed: $X' (which is trivially comparable to every other quote the customer gets), price around the outcome: a flat monthly rate that guarantees the home stays at temperature and covers all repairs and maintenance for a fixed term. There's no equivalent line item for a competitor's one-time install quote to be compared against, because you're no longer selling the same thing they are.",
+      "sourceUrl": "https://www.rolls-royce.com/media/our-stories/discover/2017/totalcare.aspx",
+      "status": "approved"
+    },
+    {
+      "name": "Show Them What It Actually Costs to Make",
+      "sourceIndustry": "consumer retail / eyewear",
+      "sourceCompany": "Warby Parker",
+      "mechanism": "When a price seems arbitrary, customers default to comparing it against every other price they can find. Explaining specifically why the price is what it is, in real material and labor terms rather than a vague markup, gives the customer a reason to stop shopping around, because the price now has a stated, checkable logic instead of feeling arbitrary.",
+      "evidence": "Traditional eyewear was marked up roughly 10-20x manufacturing cost by an industry with concentrated supplier control. Warby Parker set a flat $95 price, about 70% below the $200-500+ industry norm, explained publicly why glasses had been priced so high, and grew into a multi-billion-dollar company built substantially on word-of-mouth trust in that pricing story.",
+      "targetVerticals": ["plumbing", "electrical", "HVAC", "roofing", "general contracting"],
+      "transferTemplate": "Instead of just stating a number, show the customer what's actually in it: 'here's the cost of the part, here's the labor, here's why this isn't the $99 special you saw advertised elsewhere.' A price that comes with a visible, honest breakdown stops feeling arbitrary, and a customer with a stated reason for the price is less motivated to keep shopping to find a lower one.",
+      "sourceUrl": "https://www.bebusinesssmart.com/how-warby-parker-built-trust-with-transparent-pricing/",
+      "status": "candidate"
+    }
+  ]
+}

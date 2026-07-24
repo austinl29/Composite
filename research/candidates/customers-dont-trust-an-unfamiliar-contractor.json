@@ -1,0 +1,39 @@
+{
+  "problemType": "customers don't trust an unfamiliar contractor",
+  "generatedAt": "2026-07-24T01:21:50Z",
+  "candidates": [
+    {
+      "name": "Make the Unknown Visibly Known",
+      "sourceIndustry": "peer-to-peer marketplace / hospitality",
+      "sourceCompany": "Airbnb",
+      "mechanism": "A stranger's credibility is invisible by default online. Making it visible — real photos of your own work, a verified identity/license, and an upfront, itemized price with no surprises — does the work that an in-person handshake or a decades-long local reputation would normally do.",
+      "evidence": "A UX case study on Airbnb found that professional photography, a stronger reviews-and-identity-verification system, and upfront pricing with fewer checkout surprises together contributed to roughly a 25% lift in bookings.",
+      "targetVerticals": ["general contracting", "plumbing", "electrical", "HVAC", "remodeling"],
+      "transferTemplate": "A homeowner who's never worked with you has no way to know if you're any good, and 'trust me' isn't evidence. Close that gap the way a stranger-to-stranger marketplace does: real photos of past jobs (not stock images), a visibly verified license/insurance badge on your site and quotes, and an itemized price with nothing sprung on them later. Each piece replaces a small trust gap the customer would otherwise have to just take on faith.",
+      "sourceUrl": "https://raw.studio/blog/how-airbnb-increased-bookings-by-25-with-3-trust-building-ux-changes/",
+      "status": "candidate"
+    },
+    {
+      "name": "Put the Reviews Where the Decision Happens",
+      "sourceIndustry": "e-commerce / retail research",
+      "sourceCompany": null,
+      "mechanism": "Buyers use other customers' experiences as a substitute for information they don't have themselves, and that substitute matters most exactly when the purchase is expensive and the cost of a bad choice is high.",
+      "evidence": "Northwestern University's Spiegel Research Center, with PowerReviews, found that displaying customer reviews raised conversion by 190% for a lower-priced product category but by 380% for a higher-priced category — reviews mattered roughly twice as much for the expensive purchase.",
+      "targetVerticals": ["roofing", "HVAC", "remodeling", "solar", "general contracting"],
+      "transferTemplate": "Because a repair or install is a big-ticket, infrequent purchase, reviews matter more here than they would for something cheap and routine. Put real customer reviews (with the job type and price range visible, not just star ratings) directly next to the quote and on the estimate page itself, not buried on a separate 'testimonials' page the customer has to go looking for.",
+      "sourceUrl": "https://spiegel.medill.northwestern.edu/how-online-reviews-influence-sales/",
+      "status": "approved"
+    },
+    {
+      "name": "Guarantee It So They Don't Have To Worry",
+      "sourceIndustry": "direct-to-consumer digital products",
+      "sourceCompany": null,
+      "mechanism": "When a customer can't yet verify quality themselves, the seller absorbing the risk of a bad outcome, rather than the buyer, removes the main reason to hesitate or go shop around for reassurance elsewhere.",
+      "evidence": "In a first-hand pricing test on a $197 digital product, adding a visible 30-day money-back guarantee increased sales by 21%; even after 12% of buyers requested refunds, net revenue was still about 6.5% higher than the no-guarantee baseline.",
+      "targetVerticals": ["appliance repair", "pest control", "electrical", "HVAC", "plumbing"],
+      "transferTemplate": "State a specific, visible guarantee on the quote itself: 'if it's not fixed right, we come back free' or 'workmanship guaranteed for 12 months.' A vague reputation for being reliable doesn't reduce the customer's risk the way a stated, specific promise does — it puts the risk of a bad outcome back on you, which is exactly the risk an unfamiliar contractor otherwise leaves entirely with the homeowner.",
+      "sourceUrl": "https://www.quicksprout.com/what-converts-better-free-trial-versus-money-back-guarantee/",
+      "status": "approved"
+    }
+  ]
+}

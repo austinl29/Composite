@@ -13,6 +13,8 @@ export interface Technique {
   targetVerticals: string[];
   /** Template explaining why this technique transfers to an operator's business */
   transferTemplate: string;
+  /** The business problem this technique was researched for, e.g. "leads go cold before quoting" */
+  problemType: string;
   createdAt: string;
   updatedAt: string;
 }

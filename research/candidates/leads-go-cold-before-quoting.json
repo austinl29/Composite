@@ -1,0 +1,51 @@
+{
+  "problemType": "leads go cold before quoting",
+  "generatedAt": "2026-07-23T22:19:04Z",
+  "candidates": [
+    {
+      "name": "Golden Hour Callback",
+      "sourceIndustry": "B2B / inside sales",
+      "sourceCompany": null,
+      "mechanism": "When a prospect submits a request, their intent is highest in the first few minutes and decays fast as they move on to compare other options or simply forget why they reached out. Contacting them while that intent is still fresh means you're talking to someone actively thinking about the problem, not someone you have to re-warm up.",
+      "evidence": "Research on inside-sales lead handling (InsideSales.com data, as summarized by Teamgate) found reps who called a lead within one hour were roughly 60x more likely to qualify that lead than reps who waited a full day; a separate Velocify analysis cited on the same page found contacting a lead within one minute lifted conversion by roughly 391% compared to waiting even a few minutes longer.",
+      "targetVerticals": ["plumbing", "HVAC", "electrical", "roofing", "garage door repair"],
+      "transferTemplate": "Quotes go cold because by the time someone calls the customer back, the customer has already started comparing other providers or lost the urgency that made them reach out in the first place. The fix isn't a better quote — it's closing the gap between 'customer asks' and 'human responds.' A same-hour (ideally same-minute) callback for every inbound request, even just to say 'got your request, here's when I'll have pricing for you,' recaptures the customer while their intent is still hot.",
+      "sourceUrl": "https://www.teamgate.com/blog/lead-response-time-study-speed-impacts-revenue/",
+      "status": "candidate"
+    },
+    {
+      "name": "Book It Now, No Back-and-Forth",
+      "sourceIndustry": "B2B SaaS / sales scheduling tools",
+      "sourceCompany": "Chili Piper",
+      "mechanism": "Every extra step between 'I'm interested' and 'something is locked in' is a chance for the prospect to get distracted or cool off. Letting them pick a time and confirm it instantly, instead of waiting for a human to call back and negotiate a time, removes that entire waiting window.",
+      "evidence": "Chili Piper's 2025 benchmark analysis of nearly 4 million form submissions found that letting a prospect book a meeting immediately after filling out a form lifted form-to-meeting conversion from 30% to 66.7% on average; adding a live-call option on top of that pushed it to 69.2%.",
+      "targetVerticals": ["landscaping", "remodeling", "general contracting", "painting", "pest control"],
+      "transferTemplate": "Instead of 'we'll call you to schedule a quote visit,' let the customer pick an available slot themselves the moment they submit a request — on the website, in the confirmation text, wherever they land next. Removing the wait for a callback (and the phone-tag that usually follows) keeps them from drifting to the next contractor on their list while they wait to hear back.",
+      "sourceUrl": "https://www.chilipiper.com/post/form-conversion-rate-benchmark-report",
+      "status": "approved"
+    },
+    {
+      "name": "The Three-Touch Follow-Up",
+      "sourceIndustry": "E-commerce / retail",
+      "sourceCompany": "Klaviyo (aggregate benchmark data)",
+      "mechanism": "Most people who don't convert immediately aren't rejecting the offer — they got interrupted. A short, spaced sequence of reminders, rather than one message and done, catches people at different points as their attention returns, without demanding a big new decision each time.",
+      "evidence": "Klaviyo's benchmark data across its customer base shows abandoned-cart flows — a short reminder within a few hours, a nudge at 24 hours, a final message at 48-72 hours — are the highest-converting automated flow type it tracks, averaging a 3.33% conversion rate and $3.65 revenue per recipient, with top performers reaching 7.69% conversion; the home-improvement category was among the highest-revenue segments in that same data.",
+      "targetVerticals": ["HVAC", "plumbing", "roofing", "solar", "remodeling"],
+      "transferTemplate": "A quote that goes out once and is never followed up on relies on the customer remembering to come back on their own. Instead, send a short, pre-planned sequence: a same-day 'here's your quote' follow-up, a next-day nudge ('still want to get this scheduled?'), and a final check-in a few days later. Keep each message short and low-pressure — the goal is to catch the customer whenever their attention returns to the project, not to re-sell them every time.",
+      "sourceUrl": "https://www.klaviyo.com/blog/abandoned-cart-benchmarks",
+      "verificationCaveats": "The 3.33% conversion rate and $3.65 revenue-per-recipient figures were confirmed directly on Klaviyo's own benchmark page. The 'top performers reaching 7.69% conversion' sub-stat could NOT be independently reconfirmed on re-check — do not treat it as verified fact pending re-verification.",
+      "status": "approved"
+    },
+    {
+      "name": "Follow Up on What They Did, Not the Calendar",
+      "sourceIndustry": "B2B SaaS",
+      "sourceCompany": null,
+      "mechanism": "A blanket follow-up schedule treats an engaged prospect the same as a disengaged one, so it either annoys the ready buyer or under-serves the hesitant one. Triggering the next message off what the person actually did, rather than a fixed calendar date, keeps each touch relevant to where they actually are.",
+      "evidence": "A B2B SaaS growth case study describes replacing a fixed three-email trial sequence (day 0, day 3, day 11) with messages triggered by in-product behavior instead of the calendar; with no changes to the product or pricing, trial-to-paid conversion rose from 5.8% to 13.4% over four months.",
+      "targetVerticals": ["HVAC", "electrical", "pest control", "appliance repair"],
+      "transferTemplate": "Instead of following up with every quoted customer on the same fixed schedule, let their behavior set the next message: if they open the quote but don't reply, send a nudge specific to that quote; if they never open it, the reminder should focus on making sure they got it at all; if they ask a follow-up question, that's a signal to call, not email. The follow-up matches what the customer actually did, instead of a generic 'just checking in' sent to everyone on day three.",
+      "sourceUrl": "https://ustechautomations.com/resources/blog/saas-trial-conversion-automation-double-rate",
+      "status": "rejected"
+    }
+  ]
+}
