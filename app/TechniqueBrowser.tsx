@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { Technique } from "@/types/technique";
 
 export default function TechniqueBrowser({ techniques }: { techniques: Technique[] }) {
@@ -30,7 +31,7 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
           Composite
         </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Growth techniques from other industries, approved for review.
+          Growth techniques from other industries — see if one fits your business.
         </p>
       </header>
 
@@ -68,28 +69,30 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
 
       <ul className="flex flex-col gap-4">
         {filtered.map((t) => (
-          <li
-            key={t.id}
-            className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
-          >
-            <h2 className="font-medium text-black dark:text-zinc-50">{t.name}</h2>
-            <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-500">
-              {t.sourceIndustry}
-              {t.sourceCompany ? ` — ${t.sourceCompany}` : ""}
-            </p>
-            <p className="mt-2 line-clamp-1 text-sm text-zinc-700 dark:text-zinc-300">
-              {t.mechanism}
-            </p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {t.targetVerticals.map((v) => (
-                <span
-                  key={v}
-                  className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                >
-                  {v}
-                </span>
-              ))}
-            </div>
+          <li key={t.id}>
+            <Link
+              href={`/techniques/${t.id}`}
+              className="block rounded-lg border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600"
+            >
+              <h2 className="font-medium text-black dark:text-zinc-50">{t.name}</h2>
+              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-500">
+                {t.sourceIndustry}
+                {t.sourceCompany ? ` — ${t.sourceCompany}` : ""}
+              </p>
+              <p className="mt-2 line-clamp-1 text-sm text-zinc-700 dark:text-zinc-300">
+                {t.mechanism}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {t.targetVerticals.map((v) => (
+                  <span
+                    key={v}
+                    className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                  >
+                    {v}
+                  </span>
+                ))}
+              </div>
+            </Link>
           </li>
         ))}
       </ul>

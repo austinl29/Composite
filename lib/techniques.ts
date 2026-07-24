@@ -1,16 +1,14 @@
 import { getPool } from "@/lib/db";
 import type { Technique } from "@/types/technique";
 
-export async function getTechniques(): Promise<Technique[]> {
-  const pool = getPool();
-  const { rows } = await pool.query(`
-    select id, name, source_industry, source_company, mechanism, evidence,
-           target_verticals, transfer_template, problem_type, created_at, updated_at
-    from techniques
-    order by name
-  `);
+const SELECT_FIELDS = `
+  id, name, source_industry, source_company, mechanism, evidence,
+  target_verticals, transfer_template, problem_type, source_url,
+  created_at, updated_at
+`;
 
-  return rows.map((r) => ({
+function toTechnique(r: any): Technique {
+  return {
     id: r.id,
     name: r.name,
     sourceIndustry: r.source_industry,
@@ -20,7 +18,23 @@ export async function getTechniques(): Promise<Technique[]> {
     targetVerticals: r.target_verticals,
     transferTemplate: r.transfer_template,
     problemType: r.problem_type,
+    sourceUrl: r.source_url,
     createdAt: r.created_at.toISOString(),
     updatedAt: r.updated_at.toISOString(),
-  }));
+  };
+}
+
+export async function getTechniques(): Promise<Technique[]> {
+  const pool = getPool();
+  const { rows } = await pool.query(`select ${SELECT_FIELDS} from techniques order by name`);
+  return rows.map(toTechnique);
+}
+
+export async function getTechniqueById(id: string): Promise<Technique | null> {
+  const pool = getPool();
+  const { rows } = await pool.query(
+    `select ${SELECT_FIELDS} from techniques where id = $1`,
+    [id]
+  );
+  return rows[0] ? toTechnique(rows[0]) : null;
 }

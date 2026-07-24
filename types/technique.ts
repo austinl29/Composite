@@ -15,6 +15,8 @@ export interface Technique {
   transferTemplate: string;
   /** The business problem this technique was researched for, e.g. "leads go cold before quoting" */
   problemType: string;
+  /** Link to the original source backing the evidence */
+  sourceUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
