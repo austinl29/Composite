@@ -1,0 +1,39 @@
+{
+  "problemType": "seasonal-demand-and-cash-flow",
+  "generatedAt": "2026-07-24T20:12:02Z",
+  "candidates": [
+    {
+      "name": "Sell the Season Before It Starts",
+      "sourceIndustry": "retail",
+      "sourceCompany": null,
+      "mechanism": "Letting a customer commit to a purchase with a small deposit months before they need it converts a single peak-season cash crunch into cash trickling in for months beforehand — and it locks the customer in (and keeps them coming back into the store) well before competitors even have their attention.",
+      "evidence": "Major retailers including Walmart, Kmart, Toys R Us, GameStop, and Burlington Coat Factory have long run enhanced layaway programs starting as early as late August for the winter holiday season — Walmart lowered its minimum to $10 with 10% down — collecting installment payments for months ahead of the peak selling period while drawing customers into stores repeatedly before the season even arrives.",
+      "targetVerticals": ["landscaping", "HVAC", "pest control", "roofing", "pool service"],
+      "transferTemplate": "Sell a seasonal maintenance plan or service package months before the season actually starts, with a small deposit to lock in a slot and the balance spread across a few payments before the work begins. It smooths a lump of cash across the slow months instead of leaving all the revenue crammed into your busiest weeks, and it gets customers committed to you before they even start thinking about your competitors.",
+      "sourceUrl": "https://www.retaildive.com/news/how-enhanced-layaway-programs-lure-holiday-shoppers/406369",
+      "status": "approved"
+    },
+    {
+      "name": "Find the Season Nobody Else Is Using Your Assets For",
+      "sourceIndustry": "hospitality / leisure",
+      "sourceCompany": "Seven Springs Mountain Resort",
+      "mechanism": "A business built around one season is sitting on expensive assets — land, equipment, staff, expertise — that go idle the rest of the year. Finding a genuinely different use for those same assets in the off months turns dead capacity into a second revenue season, instead of just a cost that has to be carried year-round.",
+      "evidence": "Seven Springs Mountain Resort in Pennsylvania diversified into non-ski summer activities (an Alpine slide, chairlift rides, paddle boarding, gem mining) to the point that its summer revenue has exceeded winter revenue in several recent years. Nationally, summer business made up about 11% of total mountain resort revenue in the 2019-20 season, and closer to 20% in warmer regions, per the National Ski Areas Association.",
+      "targetVerticals": ["landscaping", "pool service", "HVAC", "roofing", "tree service"],
+      "transferTemplate": "Look at what your crew, trucks, and equipment are actually capable of doing in your slow season, not just what you've always used them for — a landscaping crew's trucks and labor can do snow removal, an HVAC install team's skills apply to insulation or weatherization work, a roofer's ladders and crew can do gutter or holiday-light installation. The goal isn't a side hustle, it's finding a second real revenue season for assets that would otherwise sit idle.",
+      "sourceUrl": "https://clubandresortbusiness.com/ski-resorts-rely-on-summer-activities-to-bolster-revenue/",
+      "status": "approved"
+    },
+    {
+      "name": "Ask for the Season's Money Before the Season's Work",
+      "sourceIndustry": "agriculture",
+      "sourceCompany": null,
+      "mechanism": "The Community Supported Agriculture model asks members to pay for an entire season's produce upfront, months before the farm delivers most of it. That upfront cash is what actually funds the seeds, labor, and supplies needed to do the work in the first place, instead of the farmer floating those costs alone and hoping revenue catches up later.",
+      "evidence": "In the CSA model, as described by LocalHarvest (the primary directory and resource organization for the CSA movement), members typically pay for the whole season upfront, which \"helps with the farm's cash flow\" — giving the farmer working capital before the season's major expenses hit, in exchange for members sharing in the season's harvest risk alongside the farm.",
+      "targetVerticals": ["landscaping", "pool service", "HVAC", "pest control"],
+      "transferTemplate": "Instead of billing customers only after each visit, offer an annual plan paid upfront (or with a real, meaningful discount for paying upfront) that covers the whole season's services. That gives you working capital before your busiest, most expense-heavy weeks hit, the same way a CSA farm collects a season's revenue before it plants — rather than carrying costs alone and hoping cash flow catches up once the season gets busy.",
+      "sourceUrl": "https://www.localharvest.org/csa/",
+      "status": "approved"
+    }
+  ]
+}

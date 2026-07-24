@@ -138,3 +138,28 @@ directly.
   designing and manufacturing in-house, and passing the savings to customers.
 - **Why this is stronger:** Direct, on-the-record quotes from a co-founder in a
   major business publication, rather than an unfamiliar blog's secondhand account.
+
+---
+
+## #24. Let Customers Reserve a Slot Instead of Waiting in Line
+`research/candidates/scheduling-and-dispatch-efficiency.json`
+
+**Added from the Data Expansion Pass review (not a Day 3 entry — flagged here because
+it's the same "source doesn't hold up" situation, not because it belongs to the
+original 15).**
+
+**Problem with current source:** the current source (Nation's Restaurant News, 2016)
+only reports Starbucks' Mobile Order & Pay adoption percentages and general company
+earnings figures. It never actually establishes the mechanism this candidate claims —
+that pre-ordering ahead of time smooths peak-hour demand and reduces staff load. The
+evidence and the claim are talking about two different things: adoption share is not
+the same as a measured queue or staffing effect.
+
+**Proposed replacement:** none. Per instruction, this is a flag only — I'm not
+guessing at a source that would directly support the queue/staff-load claim. What's
+needed is a source (an operations study, a company disclosure, or trade reporting)
+that directly measures or discusses the effect of order-ahead/mobile-order systems on
+in-store queue length, wait time, or staffing load during peak hours — not just what
+share of transactions happen through the app.
+
+**Status:** left as `"candidate"` in the JSON, not approved, per the review decision.

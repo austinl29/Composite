@@ -1,0 +1,28 @@
+{
+  "problemType": "scheduling-and-dispatch-efficiency",
+  "generatedAt": "2026-07-24T20:05:33Z",
+  "candidates": [
+    {
+      "name": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
+      "sourceIndustry": "package delivery / logistics",
+      "sourceCompany": "UPS",
+      "mechanism": "A driver or dispatcher sequencing stops by habit or instinct leaves real efficiency on the table across a full day of jobs. Software that optimizes the sequence — down to details as granular as avoiding left turns across oncoming traffic — finds savings too small to notice on any single stop but enormous across hundreds of stops a day.",
+      "evidence": "UPS's ORION route optimization system, deployed to more than 35,000 of its roughly 55,000 U.S. drivers by December 2015, is estimated to save the company $300-400 million annually at full deployment, cut 100 million delivery miles and 10 million gallons of fuel per year, and had already saved more than $320 million as of that date; the project won the 2016 INFORMS Franz Edelman Award, given for real-world operations research impact.",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting"],
+      "transferTemplate": "Instead of dispatching jobs in whatever order they came in or letting each tech plan their own route by feel, sequence the day's stops algorithmically — even a simple 'group by proximity and time window' rule beats first-come-first-served. The gains per stop are small and easy to dismiss, but they compound across every tech, every day, into a meaningful reduction in windshield time and fuel cost.",
+      "sourceUrl": "https://www.informs.org/Impact/O.R.-Analytics-Success-Stories/Optimizing-Delivery-Routes",
+      "status": "approved"
+    },
+    {
+      "name": "Let Customers Reserve a Slot Instead of Waiting in Line",
+      "sourceIndustry": "food & beverage retail",
+      "sourceCompany": "Starbucks",
+      "mechanism": "When demand all arrives at once with no way to spread it out, a business either overstaffs for the peak or makes everyone wait during it. Letting customers place and schedule their order ahead of time shifts some of that peak demand earlier and smooths the load on staff, instead of the business absorbing it all in one crush.",
+      "evidence": "Starbucks' Mobile Order & Pay grew from 4% to 5% of U.S. transactions during its early rollout (Q3 2015, per the company's own disclosed figures) and has continued climbing every year since, becoming a significant share of transactions especially during the morning rush, as reported consistently across multiple independent trade publications tracking the company's quarterly results.",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control"],
+      "transferTemplate": "Offer specific, narrow appointment windows customers can book online in advance instead of only taking same-day 'can someone come now' calls. Spreading requests across the week ahead of time means the office isn't fielding a flood of calls every morning and the crew's day is planned in advance, not assembled call by call as it happens.",
+      "sourceUrl": "https://www.nrn.com/restaurant-technology/starbucks-mobile-order-pay-usage-increases",
+      "status": "candidate"
+    }
+  ]
+}

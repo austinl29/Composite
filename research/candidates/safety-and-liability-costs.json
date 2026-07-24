@@ -1,0 +1,50 @@
+{
+  "problemType": "safety-and-liability-costs",
+  "generatedAt": "2026-07-24T19:44:51Z",
+  "candidates": [
+    {
+      "name": "Make Safety Talks a Daily Habit, Not a Poster",
+      "sourceIndustry": "heavy construction",
+      "sourceCompany": "Pizzagalli Construction",
+      "mechanism": "Safety programs fail when they're a one-time orientation or a poster on the wall. Making training and safety conversation a recurring, structured habit — new-hire orientation plus weekly toolbox talks plus visible recognition — keeps risk awareness active instead of fading after the first week.",
+      "evidence": "Within about two years of adding structured new-hire orientation, weekly safety talks, incentive awards, and stricter equipment inspections, Pizzagalli Construction (a Vermont-based heavy construction firm operating roughly 30 worksites) cut recordable injuries by nearly 48%, its lost-workday case rate by 33%, and its workers' compensation costs by 76% (from $896,603 to $213,328 a year) — a program costing about $100,000 a year that saved roughly six times that in workers' comp costs alone.",
+      "targetVerticals": ["general contracting", "roofing", "electrical", "HVAC", "landscaping"],
+      "transferTemplate": "Put a real cadence behind safety instead of a one-time hire-day checklist: a short toolbox talk every week, a documented orientation for every new hire before their first job, and visible recognition (a bonus, a callout, a small award) for crews with clean safety records. The point isn't the paperwork — it's that risk stays top of mind instead of being something everyone agreed to once and forgot.",
+      "sourceUrl": "https://www.elcosh.org/document/1479/d000101/Worker+Protection+Programs+in+Construction.html",
+      "status": "approved"
+    },
+    {
+      "name": "Coach the Driving, Not Just the Job",
+      "sourceIndustry": "fleet / logistics",
+      "sourceCompany": "Samsara (aggregate customer data)",
+      "mechanism": "Most of the physical risk for a mobile workforce happens in the vehicle between jobs, not on site. Real-time video plus automated in-cab alerts plus coaching catches risky driving behavior in the moment it happens, rather than after a claim shows up weeks later.",
+      "evidence": "Samsara's analysis of more than 2,600 fleets over 30 months found that fleets using AI dash cams with automated alerts and driver coaching saw crash rates drop by roughly 75% in aggregate, with harsh driving events down 69% and phone use while driving down 96% by month 30 for larger fleets.",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting"],
+      "transferTemplate": "For a fleet of service vehicles, the biggest liability exposure is often the drive between jobs, not the job site. Dash cams with automated alerts for harsh braking, speeding, or phone use — paired with a short coaching conversation when something trips the alert — catch and correct risky driving before it becomes an accident and a claim, instead of only ever hearing about it after something goes wrong.",
+      "sourceUrl": "https://www.samsara.com/company/news/press-releases/samsara-safety-report-shows-ai-enabled-fleets-reduce-crash-rates-by-nearly-75-percent",
+      "status": "approved"
+    },
+    {
+      "name": "A Small Safety Budget Pays for Itself Many Times Over",
+      "sourceIndustry": "manufacturing / forest products",
+      "sourceCompany": "Anthony Forest Products",
+      "mechanism": "Safety investment tends to get treated as overhead that competes with every other budget priority. A modest, targeted safety spend often returns many times its cost through avoided injuries and lower insurance costs — reframing it as an investment with a return, not a compliance expense, is what gets it funded and kept.",
+      "evidence": "Per OSHA's own published case documentation, Anthony Forest Products invested about $50,000 in targeted safety improvements between 2001 and 2006 and saved more than $1 million in workers' compensation and related costs over that period.",
+      "targetVerticals": ["general contracting", "roofing", "tree service", "HVAC", "electrical"],
+      "transferTemplate": "Treat a safety budget as an investment with an expected return, not a cost to minimize: a few thousand dollars on the right equipment, guardrails, or training for your highest-risk task can return many times that in avoided injuries, lower insurance premiums, and fewer lost workdays. Frame it to your team and your insurer that way — with a specific expected payback — rather than as a compliance line item.",
+      "sourceUrl": "https://www.osha.gov/businesscase",
+      "status": "approved"
+    },
+    {
+      "name": "Fix the Risk the Data Finds, Not the One You Assumed",
+      "sourceIndustry": "manufacturing",
+      "sourceCompany": "Superior Tube Products",
+      "mechanism": "Safety attention naturally gravitates to the task that looks the most physically demanding, while the actual highest-injury-risk task often hides somewhere mundane. Motion-tracking or direct observation data can surface the real risk, which is sometimes a nearly-free fix once you actually know where to look.",
+      "evidence": "As part of the National Safety Council's MSD Solutions Lab pilot program, Superior Tube Products used video-based motion capture and found its wash bay — not its heavy-tubing operations — was the facility's biggest injury risk; fixing it with a $45 replacement tool contributed to a 60% one-year drop in recordable incidents and a 98% reduction in workers' compensation costs over three years.",
+      "targetVerticals": ["general contracting", "HVAC", "plumbing", "electrical", "landscaping"],
+      "transferTemplate": "Before assuming the riskiest task is the obviously heavy or dangerous-looking one, watch how your crews actually move through a full day — the strain often shows up in a repetitive, unglamorous step nobody thought to flag (an awkward reach, a heavy tool used the wrong way, a cramped access point). Once you find the real culprit, the fix is frequently cheap: a better tool, a different sequence, a small equipment change — not a big program.",
+      "sourceUrl": "https://riskandinsurance.com/wearable-tech-and-ai-motion-tools-cut-msd-risk-at-major-manufacturers-nsc-program-finds/",
+      "status": "approved"
+    }
+  ]
+}
