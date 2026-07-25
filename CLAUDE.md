@@ -22,12 +22,13 @@ personalized explanation of why the parallel transfers.
 - Postgres via Vercel/Neon integration (`DATABASE_URL` in `.env.local`, gitignored)
 - Deployed on Vercel
 
-**Git → deploy: NOT connected.** Verified directly against the Vercel project's
-own API record (no `link`/`gitRepository` field, only unrelated settings toggles
-like `gitForkProtection`) — confirmed twice, most recently while writing this
-file. `git push` to GitHub does **not** trigger a deployment. Every deploy so
-far has been a manual `vercel --prod` from the CLI. If this ever gets connected
-(`vercel git connect`), update this note.
+**Git → deploy: CONNECTED.** Set up via `vercel git connect --yes` on
+2026-07-24, then verified directly against the Vercel project's own API record
+— `link.type: "github"`, repo `Composite`, `productionBranch: "main"`. A push
+to `main` now triggers a real production deployment automatically; manual
+`vercel --prod` is no longer required (though it still works if ever needed).
+This replaced the prior not-connected state, and was confirmed working end to
+end with a real push (not just the API config check) the same day.
 
 ## 3. Data Model
 
@@ -41,17 +42,27 @@ far has been a manual `vercel --prod` from the CLI. If this ever gets connected
 | `sourceCompany` | `string \| null` | `null` = general pattern, not one company's story |
 | `mechanism` | `string` | why it worked in its original context |
 | `evidence` | `string` | the concrete proof, paraphrased |
+| `sourceType` | `SourceType` | sourcing credibility tier — see below |
 | `targetVerticals` | `string[]` | home-service verticals it could apply to |
 | `transferTemplate` | `string` | draft explanation of why it transfers |
 | `problemType` | `string` | the problem category it was researched for |
 | `sourceUrl` | `string \| null` | link to the source backing the evidence |
 | `createdAt` / `updatedAt` | `string` | DB-assigned |
 
+`SourceType` (`types/technique.ts`) — the sourcing credibility tier, from
+strongest to weakest evidence: `"peer-reviewed"` | `"first-party-research"` |
+`"secondary-verified"` | `"vendor-benchmark"` | `"promotional-testimonial"`.
+Not the same axis as `verificationCaveats` on the candidate JSON (which flags
+a specific claim-level caveat) — `sourceType` classifies the source itself.
+
 **DB table** (`techniques`, see `supabase/migrations/`):
 - `0001_create_techniques.sql` — base table (`id uuid pk default gen_random_uuid()`,
-  all `Technique` fields except `source_url`, snake_case columns)
+  all `Technique` fields except `source_url`/`source_type`, snake_case columns)
 - `0002_add_source_url.sql` — added `source_url text` (nullable) after the fact,
   once the app needed it for the technique detail page
+- `0003_add_source_type.sql` — added `source_type text` (nullable, with a check
+  constraint against the 5 valid values) and backfilled for all 26 approved
+  entries based on each one's actual sourcing tier
 
 `lib/techniques.ts` maps DB rows ↔ the `Technique` type
 (`getTechniques()`, `getTechniqueById(id)`).
@@ -78,7 +89,12 @@ candidate-count target.
 - **Vendor benchmark data is acceptable but weaker tier.** Klaviyo, Samsara,
   Chili Piper, etc. publishing their own aggregate customer data is real and
   usable, but ranks below first-party peer-reviewed research or an independent
-  journalistic account. Flag tier gaps like this with a `verificationCaveats`
+  journalistic account. This tiering is now structured, not just prose: every
+  approved entry has a `sourceType` field (`peer-reviewed` > `first-party-research`
+  > `secondary-verified` > `vendor-benchmark` > `promotional-testimonial`).
+  `sourceType` classifies the source itself; `verificationCaveats` (below) flags
+  a specific claim-level caveat within an otherwise-acceptable source — the two
+  are separate axes. Flag tier gaps like this with a `verificationCaveats`
   field on the candidate JSON entry when the claim holds up but isn't top-tier
   (e.g. a promotional client testimonial, or a mechanism inferred from real data
   rather than stated by the source) — don't silently upgrade its credibility.
@@ -193,5 +209,12 @@ logic). Minimal page at `app/diagnose/page.tsx`.
 - **Data Expansion Pass:** 6 new problem categories researched (18 candidates,
   target was ~22 — shortfall is honest, not padded), reviewed (17 approved, 1
   still candidate), loaded into the live DB.
-- **Next up: Week 2 Day 2 — an eval layer for the diagnosis agent.** Nothing
-  built yet for this.
+- **Infrastructure/schema cleanup pass:** git-to-deploy connected and verified
+  with a real push, `sourceType` added to schema/DB/all 26 approved entries,
+  `evals/diagnose-cases.json` scaffolded (structure only, no real cases yet),
+  effort-tiering documented as a flagged placeholder in
+  `lib/prompts/diagnose.ts` (no config change), git identity fixed
+  (`austinl29` / `228589130+austinl29@users.noreply.github.com`).
+- **Next up: Week 2 Day 2 — populate `evals/diagnose-cases.json` with real
+  test cases and build a runner for the diagnosis agent.** Nothing built yet
+  for this beyond the placeholder file structure.

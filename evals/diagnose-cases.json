@@ -1,0 +1,26 @@
+{
+  "description": "Test cases for the /api/diagnose agent. Structure only for now — see Week 2 Day 2 for populating real cases and building a runner.",
+  "cases": [
+    {
+      "id": "example-strong-match",
+      "problem": "",
+      "expectedBehavior": "strong-match",
+      "expectedTechniqueIds": [],
+      "actual": null
+    },
+    {
+      "id": "example-moderate-match",
+      "problem": "",
+      "expectedBehavior": "moderate-match",
+      "expectedTechniqueIds": [],
+      "actual": null
+    },
+    {
+      "id": "example-honest-no-match",
+      "problem": "",
+      "expectedBehavior": "honest-no-match",
+      "expectedTechniqueIds": [],
+      "actual": null
+    }
+  ]
+}

@@ -8,6 +8,7 @@
       "sourceCompany": "Rolls-Royce",
       "mechanism": "When you sell the physical unit itself (an engine, a repair, an install), it's directly comparable to every competitor's version of the same unit, so price becomes the only variable left to compare. Pricing around the outcome the customer actually wants instead, rather than the part, means there's no equivalent line item for a competitor's price to be compared against.",
       "evidence": "Rolls-Royce's TotalCare program charges airlines a fixed rate per flying hour rather than selling the engine and its maintenance separately. Rolls-Royce is only paid when the engine performs, which pushed them to extend service intervals between overhauls by around 25%, and led to contracts running 10-20+ years instead of one-time equipment sales.",
+      "sourceType": "first-party-research",
       "targetVerticals": ["HVAC", "solar", "pool service", "pest control"],
       "transferTemplate": "Instead of quoting 'a new AC unit, installed: $X' (which is trivially comparable to every other quote the customer gets), price around the outcome: a flat monthly rate that guarantees the home stays at temperature and covers all repairs and maintenance for a fixed term. There's no equivalent line item for a competitor's one-time install quote to be compared against, because you're no longer selling the same thing they are.",
       "sourceUrl": "https://www.rolls-royce.com/media/our-stories/discover/2017/totalcare.aspx",

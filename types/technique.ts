@@ -1,3 +1,11 @@
+/** Sourcing credibility tier, from strongest to weakest evidence */
+export type SourceType =
+  | "peer-reviewed"
+  | "first-party-research"
+  | "secondary-verified"
+  | "vendor-benchmark"
+  | "promotional-testimonial";
+
 export interface Technique {
   id: string;
   name: string;
@@ -9,6 +17,8 @@ export interface Technique {
   mechanism: string;
   /** Proof it worked: data, results, citations */
   evidence: string;
+  /** Sourcing credibility tier for the evidence */
+  sourceType: SourceType;
   /** Home-service verticals this could apply to, e.g. ["plumbing", "HVAC"] */
   targetVerticals: string[];
   /** Template explaining why this technique transfers to an operator's business */

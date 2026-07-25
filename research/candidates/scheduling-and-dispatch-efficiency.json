@@ -8,6 +8,7 @@
       "sourceCompany": "UPS",
       "mechanism": "A driver or dispatcher sequencing stops by habit or instinct leaves real efficiency on the table across a full day of jobs. Software that optimizes the sequence — down to details as granular as avoiding left turns across oncoming traffic — finds savings too small to notice on any single stop but enormous across hundreds of stops a day.",
       "evidence": "UPS's ORION route optimization system, deployed to more than 35,000 of its roughly 55,000 U.S. drivers by December 2015, is estimated to save the company $300-400 million annually at full deployment, cut 100 million delivery miles and 10 million gallons of fuel per year, and had already saved more than $320 million as of that date; the project won the 2016 INFORMS Franz Edelman Award, given for real-world operations research impact.",
+      "sourceType": "first-party-research",
       "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting"],
       "transferTemplate": "Instead of dispatching jobs in whatever order they came in or letting each tech plan their own route by feel, sequence the day's stops algorithmically — even a simple 'group by proximity and time window' rule beats first-come-first-served. The gains per stop are small and easy to dismiss, but they compound across every tech, every day, into a meaningful reduction in windshield time and fuel cost.",
       "sourceUrl": "https://www.informs.org/Impact/O.R.-Analytics-Success-Stories/Optimizing-Delivery-Routes",

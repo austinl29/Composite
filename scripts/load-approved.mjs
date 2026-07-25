@@ -29,14 +29,15 @@ try {
   for (const c of approved) {
     await client.query(
       `insert into techniques
-        (name, source_industry, source_company, mechanism, evidence, target_verticals, transfer_template, problem_type, source_url)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        (name, source_industry, source_company, mechanism, evidence, source_type, target_verticals, transfer_template, problem_type, source_url)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         c.name,
         c.sourceIndustry,
         c.sourceCompany,
         c.mechanism,
         c.evidence,
+        c.sourceType,
         c.targetVerticals,
         c.transferTemplate,
         c.problemType,

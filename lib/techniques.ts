@@ -2,7 +2,7 @@ import { getPool } from "@/lib/db";
 import type { Technique } from "@/types/technique";
 
 const SELECT_FIELDS = `
-  id, name, source_industry, source_company, mechanism, evidence,
+  id, name, source_industry, source_company, mechanism, evidence, source_type,
   target_verticals, transfer_template, problem_type, source_url,
   created_at, updated_at
 `;
@@ -15,6 +15,7 @@ function toTechnique(r: any): Technique {
     sourceCompany: r.source_company,
     mechanism: r.mechanism,
     evidence: r.evidence,
+    sourceType: r.source_type,
     targetVerticals: r.target_verticals,
     transferTemplate: r.transfer_template,
     problemType: r.problem_type,

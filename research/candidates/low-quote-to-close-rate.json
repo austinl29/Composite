@@ -30,6 +30,7 @@
       "sourceCompany": "Bob & Lush",
       "mechanism": "A decision with no deadline gets deferred indefinitely. A clear, real deadline on an offer forces the decision to happen at the point of maximum interest, instead of drifting until the customer forgets or moves on.",
       "evidence": "An e-commerce case study for pet supply retailer Bob & Lush found that adding a genuine urgency message to product pages (free next-day delivery if ordered by 4pm) produced a 27.1% revenue uplift and a 9.5% increase in checkout visits, measured over a 42-day test at 95% confidence.",
+      "sourceType": "vendor-benchmark",
       "targetVerticals": ["plumbing", "HVAC", "roofing", "pest control", "appliance repair"],
       "transferTemplate": "Put a real, honest deadline on the quote itself — 'this price is valid through [date] because material costs are re-quoted weekly' or 'this install slot is held for 48 hours.' The deadline has to be true, not a fake countdown, but a genuine one gives the customer a reason to decide now instead of letting 'I'll think about it' turn into never.",
       "sourceUrl": "https://speero.com/post/implementing-urgency-on-ecommerce-product-pages-for-a-27-1-lift-case-study",
