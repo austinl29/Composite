@@ -1,14 +1,3 @@
-/**
- * Model config placeholder: app/api/diagnose/route.ts currently calls every
- * request with claude-opus-4-8, thinking: { type: "adaptive" }, and
- * output_config: { effort: "high" } — the strongest (and most expensive) tier
- * available, applied uniformly regardless of how clear-cut the problem is.
- * This was a default, not a measured decision. Revisit once evals/ has real
- * cases: if a cheaper first-pass filter (medium effort, or a smaller model)
- * performs comparably on the clear-cut cases, tier the config instead of
- * paying max cost on every call. Do not change this until eval data exists
- * to justify it either way.
- */
 export const DIAGNOSE_SYSTEM_PROMPT = `You are the diagnosis engine for Composite, a tool that matches a home-service
 business operator's described problem to proven growth/conversion techniques
 drawn from OTHER industries.
