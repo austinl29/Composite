@@ -49,12 +49,25 @@ const CONFIDENCE_LABELS: Record<Match["confidence"], string> = {
   weak: "Weak fit",
 };
 
+const LEAD_SOURCE_OPTIONS = [
+  { value: "", label: "Prefer not to say" },
+  { value: "referral", label: "Referral" },
+  { value: "repeat customers", label: "Repeat customers" },
+  { value: "paid ads", label: "Paid ads" },
+  { value: "other", label: "Other" },
+];
+
 export default function DiagnoseForm({
   sourceTypeById,
 }: {
   sourceTypeById: Record<string, SourceType>;
 }) {
   const [problem, setProblem] = useState("");
+  const [showContext, setShowContext] = useState(false);
+  const [avgTicketPrice, setAvgTicketPrice] = useState("");
+  const [activeCustomerCount, setActiveCustomerCount] = useState("");
+  const [crewSize, setCrewSize] = useState("");
+  const [leadSource, setLeadSource] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnoseResult | null>(null);
@@ -86,7 +99,15 @@ export default function DiagnoseForm({
       const res = await fetch("/api/diagnose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ problem }),
+        body: JSON.stringify({
+          problem,
+          avgTicketPrice: avgTicketPrice.trim() ? Number(avgTicketPrice) : undefined,
+          activeCustomerCount: activeCustomerCount.trim()
+            ? Number(activeCustomerCount)
+            : undefined,
+          crewSize: crewSize.trim() ? Number(crewSize) : undefined,
+          leadSource: leadSource || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -131,6 +152,85 @@ export default function DiagnoseForm({
           >
             {loading ? "Checking…" : "Check against database"}
           </button>
+        </div>
+
+        <div className="rounded-md border border-zinc-200 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={() => setShowContext((s) => !s)}
+            className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-600 dark:text-zinc-400"
+          >
+            <span>
+              Tell us about your business{" "}
+              <span className="text-zinc-400 dark:text-zinc-600">(optional)</span>
+            </span>
+            <span className="text-zinc-400 dark:text-zinc-600">
+              {showContext ? "−" : "+"}
+            </span>
+          </button>
+
+          {showContext && (
+            <div className="grid grid-cols-1 gap-3 border-t border-zinc-200 p-3 sm:grid-cols-2 dark:border-zinc-800">
+              <p className="text-xs text-zinc-500 sm:col-span-2 dark:text-zinc-500">
+                Skip anything you don&apos;t know — this just helps us reason
+                concretely about your numbers instead of staying generic.
+              </p>
+              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+                Average ticket price ($)
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  disabled={loading}
+                  value={avgTicketPrice}
+                  onChange={(e) => setAvgTicketPrice(e.target.value)}
+                  placeholder="e.g. 350"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+                Active/repeat customers
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  disabled={loading}
+                  value={activeCustomerCount}
+                  onChange={(e) => setActiveCustomerCount(e.target.value)}
+                  placeholder="e.g. 200"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+                Crew size
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  disabled={loading}
+                  value={crewSize}
+                  onChange={(e) => setCrewSize(e.target.value)}
+                  placeholder="e.g. 4"
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+                Current primary lead source
+                <select
+                  disabled={loading}
+                  value={leadSource}
+                  onChange={(e) => setLeadSource(e.target.value)}
+                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                >
+                  {LEAD_SOURCE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </div>
       </form>
 

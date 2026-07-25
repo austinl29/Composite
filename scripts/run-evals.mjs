@@ -44,7 +44,7 @@ for (const c of cases) {
     const res = await fetch(`${baseUrl}/api/diagnose`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ problem: c.problem }),
+      body: JSON.stringify({ problem: c.problem, ...(c.businessContext || {}) }),
     });
     httpStatus = res.status;
     response = await res.json();
@@ -108,6 +108,37 @@ for (const c of cases) {
     }
   }
 
+  // Combined text used for the two text-content checks below: the overall
+  // assessment plus every match's explanation.
+  const combinedText = [response.assessment, ...matches.map((m) => m.explanation)]
+    .filter(Boolean)
+    .join("\n");
+
+  // Concrete-reasoning check: with business context provided, at least one
+  // of the operator's actual numbers should show up in the reasoning.
+  if (Array.isArray(c.requiredAnyStrings) && c.requiredAnyStrings.length > 0) {
+    const lowerText = combinedText.toLowerCase();
+    const found = c.requiredAnyStrings.some((s) => lowerText.includes(s.toLowerCase()));
+    if (!found) {
+      failures.push(
+        `Expected concrete reasoning referencing one of: ${c.requiredAnyStrings.join(", ")} — none found in assessment/explanations`
+      );
+    }
+  }
+
+  // Anti-fabrication check: never a projected dollar/customer-count outcome.
+  if (Array.isArray(c.forbiddenPatterns)) {
+    for (const patternSrc of c.forbiddenPatterns) {
+      const re = new RegExp(patternSrc, "i");
+      const match = combinedText.match(re);
+      if (match) {
+        failures.push(
+          `Fabricated-projection pattern matched (/${patternSrc}/i): "${match[0]}"`
+        );
+      }
+    }
+  }
+
   results.push({
     case: c,
     pass: failures.length === 0,
@@ -137,6 +168,9 @@ if (failCount > 0) {
   for (const r of results.filter((r) => !r.pass)) {
     console.log(`--- ${r.case.id} ---`);
     console.log(`Problem: ${r.case.problem}`);
+    if (r.case.businessContext) {
+      console.log(`Business context sent: ${JSON.stringify(r.case.businessContext)}`);
+    }
     console.log(`Expected: ${r.case.expectedBehavior}, techniques: ${JSON.stringify(r.case.expectedTechniqueNames || [])}`);
     console.log(`HTTP status: ${r.httpStatus}`);
     console.log(`Full response:`);

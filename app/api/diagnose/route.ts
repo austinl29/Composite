@@ -5,6 +5,22 @@ import { getAnthropicClient } from "@/lib/anthropic";
 import { getTechniques } from "@/lib/techniques";
 import { DIAGNOSE_SYSTEM_PROMPT } from "@/lib/prompts/diagnose";
 
+const LEAD_SOURCES = ["referral", "repeat customers", "paid ads", "other"] as const;
+
+function readOptionalPositiveNumber(
+  value: unknown,
+  field: string
+): { ok: true; value: number | undefined } | { ok: false; error: string } {
+  if (value === undefined || value === null || value === "") {
+    return { ok: true, value: undefined };
+  }
+  const num = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(num) || num <= 0) {
+    return { ok: false, error: `'${field}' must be a positive number if provided.` };
+  }
+  return { ok: true, value: num };
+}
+
 export async function POST(request: Request) {
   let body: unknown;
   try {
@@ -30,6 +46,51 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  // Optional business context. Every field is independently optional — an
+  // operator can fill in none, some, or all of them.
+  const rawBody = (typeof body === "object" && body !== null ? body : {}) as Record<
+    string,
+    unknown
+  >;
+
+  const avgTicketPriceResult = readOptionalPositiveNumber(rawBody.avgTicketPrice, "avgTicketPrice");
+  if (!avgTicketPriceResult.ok) {
+    return NextResponse.json({ error: avgTicketPriceResult.error }, { status: 400 });
+  }
+  const activeCustomerCountResult = readOptionalPositiveNumber(
+    rawBody.activeCustomerCount,
+    "activeCustomerCount"
+  );
+  if (!activeCustomerCountResult.ok) {
+    return NextResponse.json({ error: activeCustomerCountResult.error }, { status: 400 });
+  }
+  const crewSizeResult = readOptionalPositiveNumber(rawBody.crewSize, "crewSize");
+  if (!crewSizeResult.ok) {
+    return NextResponse.json({ error: crewSizeResult.error }, { status: 400 });
+  }
+
+  let leadSource: (typeof LEAD_SOURCES)[number] | undefined;
+  if (rawBody.leadSource !== undefined && rawBody.leadSource !== null && rawBody.leadSource !== "") {
+    if (
+      typeof rawBody.leadSource !== "string" ||
+      !LEAD_SOURCES.includes(rawBody.leadSource as (typeof LEAD_SOURCES)[number])
+    ) {
+      return NextResponse.json(
+        { error: `'leadSource' must be one of: ${LEAD_SOURCES.join(", ")}.` },
+        { status: 400 }
+      );
+    }
+    leadSource = rawBody.leadSource as (typeof LEAD_SOURCES)[number];
+  }
+
+  const businessContext = {
+    avgTicketPrice: avgTicketPriceResult.value,
+    activeCustomerCount: activeCustomerCountResult.value,
+    crewSize: crewSizeResult.value,
+    leadSource,
+  };
+  const hasBusinessContext = Object.values(businessContext).some((v) => v !== undefined);
 
   const techniques = await getTechniques();
 
@@ -69,6 +130,25 @@ export async function POST(request: Request) {
     transferTemplate: t.transferTemplate,
   }));
 
+  const businessContextBlock = hasBusinessContext
+    ? `\n\nBusiness context (operator-provided, may be partial — only use what's here):\n${[
+        businessContext.avgTicketPrice !== undefined
+          ? `- Average ticket price: $${businessContext.avgTicketPrice}`
+          : null,
+        businessContext.activeCustomerCount !== undefined
+          ? `- Approximate active/repeat customers: ${businessContext.activeCustomerCount}`
+          : null,
+        businessContext.crewSize !== undefined
+          ? `- Crew size: ${businessContext.crewSize}`
+          : null,
+        businessContext.leadSource !== undefined
+          ? `- Current primary lead source: ${businessContext.leadSource}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n")}`
+    : "";
+
   const client = getAnthropicClient();
 
   const response = await client.messages.parse({
@@ -83,7 +163,7 @@ export async function POST(request: Request) {
     messages: [
       {
         role: "user",
-        content: `Operator's problem description:\n"""\n${problem}\n"""\n\nAvailable techniques (JSON):\n${JSON.stringify(
+        content: `Operator's problem description:\n"""\n${problem}\n"""${businessContextBlock}\n\nAvailable techniques (JSON):\n${JSON.stringify(
           techniquesForPrompt,
           null,
           2
