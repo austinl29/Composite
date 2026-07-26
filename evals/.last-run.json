@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-07-26T14:55:15.502Z",
+  "timestamp": "2026-07-26T22:04:04.216Z",
   "baseUrl": "http://localhost:3000",
-  "totalCases": 30,
-  "passCount": 26,
-  "failCount": 4,
+  "totalCases": 31,
+  "passCount": 25,
+  "failCount": 6,
   "blockingFailureCount": 0,
   "blockingFailures": [],
-  "fileHash": "da8c4af6d7c00bdde32435b70b3659c863d6dfcc58b964d981db62c9a163dd9a",
+  "fileHash": "8d51808312b776f07e2d1c97451f239fb6e63a38baaf2b1dca377db984525577",
   "hashedFiles": [
     "app/api/diagnose/route.ts",
     "lib/prompts/diagnose.ts",

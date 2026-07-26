@@ -130,6 +130,36 @@ function buildBusinessContextBlock(businessContext: BusinessContext): string {
   return `\n\nBusiness context (operator-provided, free text — may be partial, only use what's actually here):\n"""\n${businessContext.trim()}\n"""`;
 }
 
+// Defense in depth, independent of the prompt's instructions (same
+// "structural, not just instructional" discipline as the synthesis safety
+// net): `assessment` is free text, and the model is given each technique's
+// `id` in-context so it can populate `matches[].techniqueId` — nothing
+// structurally prevents it from also citing that id in its prose summary.
+// A full uuid or its first 8-hex-char segment are the two forms actually
+// observed leaking through; both are stripped (never resolved to a name
+// inline — the match cards below already show full names, so a specific
+// id-shaped callout in the summary isn't required for the summary to read
+// cleanly without it).
+const FULL_UUID_TOKEN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const HEX8_TOKEN = /^[0-9a-f]{8}$/i;
+const HAS_HEX_LETTER = /[a-f]/i;
+
+function isIdLikeToken(token: string): boolean {
+  return FULL_UUID_TOKEN.test(token) || (HEX8_TOKEN.test(token) && HAS_HEX_LETTER.test(token));
+}
+
+export function sanitizeAssessment(assessment: string): string {
+  return assessment
+    .replace(/\(([^()]*)\)/g, (full, inner: string) => {
+      const parts = inner.split(",").map((p) => p.trim());
+      const allIdLike = parts.length > 0 && parts.every(isIdLikeToken);
+      return allIdLike ? "" : full;
+    })
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/[ \t]+([,.;:!?])/g, "$1")
+    .trim();
+}
+
 /**
  * Runs one diagnosis call against the given technique set with the given
  * model/effort config. The Zod-enum fabrication grounding (techniqueId
@@ -242,6 +272,6 @@ export async function runDiagnosis({
 
   return {
     ok: true,
-    result: { matches, assessment: parsed.assessment, latencyMs },
+    result: { matches, assessment: sanitizeAssessment(parsed.assessment), latencyMs },
   };
 }

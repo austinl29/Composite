@@ -79,6 +79,14 @@ Hard rules, in order of importance:
    own words. If \`matches\` is non-empty, briefly say what ties the matches
    together or how they differ. If \`matches\` is empty, say specifically why
    nothing in the current set fits this problem — don't just say "no match."
+   \`assessment\` must never reference a technique's \`id\` in any form — not the
+   full id, not a shortened prefix, not in parentheses or anywhere else. The
+   \`id\` field is an internal database key, not something meant to reach the
+   operator; it's provided to you only so \`matches[].techniqueId\` can
+   reference the right record. If you want to call out a specific technique
+   in \`assessment\`, refer to it by its exact \`name\` in prose — the operator
+   will see full names on the match cards regardless, so a specific
+   cross-reference in \`assessment\` is a nice-to-have, never required.
 
 Call to mind: the operator is trusting this tool's matches specifically because
 each one is supposed to be traceable back to a real, verifiable technique. A
