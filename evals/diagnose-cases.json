@@ -160,12 +160,7 @@
       "id": "context-01-concrete-reasoning",
       "tags": ["business-context", "concrete-reasoning"],
       "problem": "We've been doing quarterly pest control for the same list of homes for years, but there's nothing that actually rewards someone for staying with us instead of switching to whoever undercuts us next spring.",
-      "businessContext": {
-        "avgTicketPrice": 140,
-        "activeCustomerCount": 310,
-        "crewSize": 4,
-        "leadSource": "repeat customers"
-      },
+      "businessContext": "Average ticket price is $140, we have about 310 active/repeat customers, crew of 4, mostly repeat customers as our lead source.",
       "expectedBehavior": "strong-match",
       "expectedTechniqueNames": ["Make Coming Back Worth Something"],
       "requiredAnyStrings": ["140", "$140", "310"],
@@ -181,12 +176,7 @@
       "id": "context-02-no-fabricated-projection",
       "tags": ["business-context", "anti-fabrication"],
       "problem": "We get almost all our new customers from word of mouth, but there's nothing formal in place — no bonus, no discount, nothing — for someone who actually sends a friend our way.",
-      "businessContext": {
-        "avgTicketPrice": 450,
-        "activeCustomerCount": 90,
-        "crewSize": 3,
-        "leadSource": "referral"
-      },
+      "businessContext": "Average ticket price is $450, we have about 90 active customers, crew of 3, referral is our primary lead source.",
       "expectedBehavior": "strong-match",
       "expectedTechniqueNames": ["Give Both Sides a Reason to Talk About You"],
       "requiredAnyStrings": ["450", "$450", "90"],
@@ -202,9 +192,7 @@
       "id": "context-03-partial-context",
       "tags": ["business-context", "partial-context"],
       "problem": "Every estimator on my team prices jobs a little differently based on gut feel, and I sometimes wonder if we're leaving money on the table on some jobs and scaring off customers on others.",
-      "businessContext": {
-        "crewSize": 11
-      },
+      "businessContext": "Crew of 11.",
       "expectedBehavior": "strong-match",
       "expectedTechniqueNames": ["Build a Model, Not a Gut Check"],
       "requiredAnyStrings": ["11"],

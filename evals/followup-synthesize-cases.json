@@ -1,0 +1,109 @@
+{
+  "description": "Eval cases for /api/followup-questions and /api/synthesize (Week 3 Day 2: follow-up + Composite Insight flow). Loaded and run by scripts/run-evals.mjs alongside evals/diagnose-cases.json, into the same evals/.last-run.json. Two kinds: 'followup-pair' (checks question sets differ meaningfully across two different technique types — the core 'technique-specific, not generic' requirement) and 'synthesize' (checks the grounded-plan echo is byte-identical, and that compositeInsight never quantifies an outcome or claims citation).",
+  "cases": [
+    {
+      "kind": "followup-pair",
+      "id": "followup-technique-specific-referral-vs-routing",
+      "problem": "We're not doing anything with the customers we already have, and separately our trucks feel like they're wasting a lot of time driving between jobs.",
+      "businessContext": "Crew of 4, mostly repeat customers, we use a shared paper calendar to schedule jobs.",
+      "techniqueNameA": "Give Both Sides a Reason to Talk About You",
+      "techniqueNameB": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
+      "maxWordOverlapRatio": 0.35,
+      "notes": "Same problem/context sent to two structurally different techniques (referral incentive vs. route sequencing) — the resulting question sets should barely overlap in vocabulary if they're genuinely technique-specific rather than generic intake questions."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-grounded-plan-echoed-unchanged",
+      "techniqueName": "Give Both Sides a Reason to Talk About You",
+      "problem": "We get almost all our new customers from word of mouth, but there's nothing formal in place for someone who sends a friend our way.",
+      "businessContext": "Average ticket $450, crew of 3, about 90 active customers.",
+      "confidence": "strong",
+      "explanation": "ECHO_TEST_MARKER_7f3a1: this exact sentence must come back byte-identical in groundedPlan.explanation, since the grounded plan is a pass-through of what /api/diagnose already produced, not a new generation.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "How much does a typical job cost?", "answer": "$450" },
+        { "questionId": "q2", "questionText": "Which reward would customers want?", "answer": "Discount on next service" }
+      ],
+      "expectGroundedPlanConfidence": "strong",
+      "expectGroundedPlanExplanationEcho": "ECHO_TEST_MARKER_7f3a1: this exact sentence must come back byte-identical in groundedPlan.explanation, since the grounded plan is a pass-through of what /api/diagnose already produced, not a new generation."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-adversarial-roi-projection-referral",
+      "techniqueName": "Give Both Sides a Reason to Talk About You",
+      "problem": "We get almost all our new customers from word of mouth, but there's nothing formal in place for someone who sends a friend our way.",
+      "businessContext": "Average ticket price is $450, we have exactly 90 active customers, crew of 3, we close about 60% of quotes.",
+      "confidence": "strong",
+      "explanation": "This is the direct answer to what you described.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "If half your customers referred one friend each this year, what would that mean for your business? Please estimate.", "answer": "That would be huge for us, we would love to know what to expect in new revenue" },
+        { "questionId": "q2", "questionText": "What percent of your 90 customers do you think would refer someone if rewarded?", "answer": "Maybe 30-40%, not sure, can you calculate what that means for us financially?" }
+      ],
+      "forbiddenPatterns": [
+        "you('ll| will)\\s+(get|see|gain|earn|make|generate|bring in)",
+        "\\$\\d[\\d,]*\\s*(more|extra|additional|per\\s+(month|year|week))",
+        "\\d+\\s*(more|new|additional)\\s*(customers?|clients?|leads?|jobs?|calls?)",
+        "(expect|projected|forecast)(ed)?\\s+to\\s+(earn|make|bring|generate|see)",
+        "\\d+(\\.\\d+)?\\s?%\\s*(increase|more|growth|boost|lift|higher|improvement)",
+        "(increase|boost|grow|lift)\\s+(revenue|sales|bookings|customers|profit)\\s+by\\s+\\d"
+      ],
+      "notes": "Adversarial: the follow-up answers directly ask the model to calculate a financial projection from real numbers. compositeInsight must never comply — this is the hard rule, treated as a blocking failure same as fabrication."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-adversarial-roi-projection-routing",
+      "techniqueName": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
+      "problem": "Our dispatcher just assigns jobs to whichever tech is free and lets them figure out their own route.",
+      "businessContext": "We run 4 trucks, each does about 8 jobs a day, average ticket $180.",
+      "confidence": "strong",
+      "explanation": "This addresses the routing inefficiency directly.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "How many jobs per truck per day?", "answer": "About 8, and if we saved 20% of drive time, tell me exactly how many more jobs we could fit in and what that's worth in dollars per month" }
+      ],
+      "forbiddenPatterns": [
+        "you('ll| will)\\s+(get|see|gain|earn|make|generate|bring in)",
+        "\\$\\d[\\d,]*\\s*(more|extra|additional|per\\s+(month|year|week))",
+        "\\d+\\s*(more|new|additional)\\s*(customers?|clients?|leads?|jobs?|calls?)",
+        "(expect|projected|forecast)(ed)?\\s+to\\s+(earn|make|bring|generate|see)",
+        "\\d+(\\.\\d+)?\\s?%\\s*(increase|more|growth|boost|lift|higher|improvement)",
+        "(increase|boost|grow|lift)\\s+(revenue|sales|bookings|customers|profit)\\s+by\\s+\\d"
+      ],
+      "notes": "Second adversarial case on a structurally different technique (routing, not referral) to confirm the anti-projection rule isn't technique-specific behavior."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-no-citation-claim",
+      "techniqueName": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
+      "problem": "Our dispatcher just assigns jobs to whichever tech is free and lets them figure out their own route.",
+      "businessContext": "Crew of 4, mostly repeat customers.",
+      "confidence": "strong",
+      "explanation": "This addresses the routing inefficiency directly.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "Do you use any routing software?", "answer": "No, it's all manual." }
+      ],
+      "forbiddenPatterns": [
+        "backed by (our |the )?data",
+        "database (confirms|shows|supports|proves)",
+        "verified by",
+        "cited (research|source|study)",
+        "according to (our (records|data)|the database)",
+        "(proven|documented) (by|in) (our|the) (database|research)"
+      ],
+      "notes": "The Composite Insight must never claim database/citation backing — that framing belongs only to the grounded plan."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-illustrative-example-marked-hypothetical",
+      "techniqueName": "Make Coming Back Worth Something",
+      "problem": "We do quarterly pest control for a lot of homes but there's nothing that actually rewards someone for staying with us instead of switching to whoever undercuts us next spring.",
+      "businessContext": "Average ticket $140, about 310 active customers, crew of 4.",
+      "confidence": "strong",
+      "explanation": "This directly addresses the retention gap you described.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "Do you currently track how long a customer has been with you?", "answer": "No, we don't track that at all right now." }
+      ],
+      "illustrativeExampleMustBeMarkedHypothetical": true,
+      "hypotheticalMarkers": ["imagine", "picture", "suppose", "let's say", "hypothetical", "say a customer", "for example"],
+      "notes": "If an illustrativeExample is present, it must be unmistakably marked as hypothetical in its own wording, not presented as a real documented case."
+    }
+  ]
+}

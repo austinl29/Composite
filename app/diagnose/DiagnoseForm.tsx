@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SourceType } from "@/types/technique";
+import MatchDeepDive from "./MatchDeepDive";
 
 interface Match {
   techniqueId: string;
@@ -18,6 +19,7 @@ interface DiagnoseResult {
 }
 
 const MAX_LENGTH = 4000;
+const CONTEXT_MAX_LENGTH = 2000;
 
 const LOADING_MESSAGES = [
   "Reading through what you described…",
@@ -49,25 +51,14 @@ const CONFIDENCE_LABELS: Record<Match["confidence"], string> = {
   weak: "Weak fit",
 };
 
-const LEAD_SOURCE_OPTIONS = [
-  { value: "", label: "Prefer not to say" },
-  { value: "referral", label: "Referral" },
-  { value: "repeat customers", label: "Repeat customers" },
-  { value: "paid ads", label: "Paid ads" },
-  { value: "other", label: "Other" },
-];
-
 export default function DiagnoseForm({
   sourceTypeById,
 }: {
   sourceTypeById: Record<string, SourceType>;
 }) {
   const [problem, setProblem] = useState("");
+  const [businessContext, setBusinessContext] = useState("");
   const [showContext, setShowContext] = useState(false);
-  const [avgTicketPrice, setAvgTicketPrice] = useState("");
-  const [activeCustomerCount, setActiveCustomerCount] = useState("");
-  const [crewSize, setCrewSize] = useState("");
-  const [leadSource, setLeadSource] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<DiagnoseResult | null>(null);
@@ -85,12 +76,14 @@ export default function DiagnoseForm({
   }, [loading]);
 
   const submittedProblemRef = useRef("");
+  const submittedContextRef = useRef("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!problem.trim() || loading) return;
 
     submittedProblemRef.current = problem;
+    submittedContextRef.current = businessContext;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -101,12 +94,7 @@ export default function DiagnoseForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           problem,
-          avgTicketPrice: avgTicketPrice.trim() ? Number(avgTicketPrice) : undefined,
-          activeCustomerCount: activeCustomerCount.trim()
-            ? Number(activeCustomerCount)
-            : undefined,
-          crewSize: crewSize.trim() ? Number(crewSize) : undefined,
-          leadSource: leadSource || undefined,
+          businessContext: businessContext.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -123,6 +111,7 @@ export default function DiagnoseForm({
   }
 
   const overLimit = problem.length > MAX_LENGTH;
+  const contextOverLimit = businessContext.length > CONTEXT_MAX_LENGTH;
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,7 +136,7 @@ export default function DiagnoseForm({
           </span>
           <button
             type="submit"
-            disabled={loading || !problem.trim() || overLimit}
+            disabled={loading || !problem.trim() || overLimit || contextOverLimit}
             className="shrink-0 rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
           >
             {loading ? "Checking…" : "Check against database"}
@@ -170,65 +159,29 @@ export default function DiagnoseForm({
           </button>
 
           {showContext && (
-            <div className="grid grid-cols-1 gap-3 border-t border-zinc-200 p-3 sm:grid-cols-2 dark:border-zinc-800">
-              <p className="text-xs text-zinc-500 sm:col-span-2 dark:text-zinc-500">
-                Skip anything you don&apos;t know — this just helps us reason
-                concretely about your numbers instead of staying generic.
+            <div className="flex flex-col gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800">
+              <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                Anything about your business helps us reason concretely instead of
+                staying generic — numbers, tools, how you currently do things,
+                whatever seems relevant.
               </p>
-              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
-                Average ticket price ($)
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  disabled={loading}
-                  value={avgTicketPrice}
-                  onChange={(e) => setAvgTicketPrice(e.target.value)}
-                  placeholder="e.g. 350"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
-                Active/repeat customers
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  disabled={loading}
-                  value={activeCustomerCount}
-                  onChange={(e) => setActiveCustomerCount(e.target.value)}
-                  placeholder="e.g. 200"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
-                Crew size
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  disabled={loading}
-                  value={crewSize}
-                  onChange={(e) => setCrewSize(e.target.value)}
-                  placeholder="e.g. 4"
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-500">
-                Current primary lead source
-                <select
-                  disabled={loading}
-                  value={leadSource}
-                  onChange={(e) => setLeadSource(e.target.value)}
-                  className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
-                >
-                  {LEAD_SOURCE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <textarea
+                value={businessContext}
+                onChange={(e) => setBusinessContext(e.target.value)}
+                placeholder="e.g. Average ticket ~$225, crew of 3, mostly repeat customers, we run a Xero window washing tank on the truck and book jobs through a shared calendar."
+                rows={3}
+                disabled={loading}
+                className="w-full rounded-md border border-zinc-300 bg-white p-3 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+              />
+              <span
+                className={`self-end text-xs ${
+                  contextOverLimit
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-zinc-400 dark:text-zinc-600"
+                }`}
+              >
+                {businessContext.length}/{CONTEXT_MAX_LENGTH}
+              </span>
             </div>
           )}
         </div>
@@ -300,6 +253,15 @@ export default function DiagnoseForm({
                           Source: {SOURCE_TYPE_LABELS[sourceType]}
                         </p>
                       )}
+                      <MatchDeepDive
+                        techniqueId={m.techniqueId}
+                        techniqueName={m.techniqueName}
+                        confidence={m.confidence}
+                        explanation={m.explanation}
+                        sourceType={sourceType}
+                        problem={submittedProblemRef.current}
+                        businessContext={submittedContextRef.current}
+                      />
                     </li>
                   );
                 })}

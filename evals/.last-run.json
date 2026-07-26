@@ -1,16 +1,23 @@
 {
-  "timestamp": "2026-07-26T00:45:38.146Z",
+  "timestamp": "2026-07-26T02:13:24.809Z",
   "baseUrl": "http://localhost:3000",
-  "totalCases": 23,
-  "passCount": 18,
+  "totalCases": 29,
+  "passCount": 24,
   "failCount": 5,
   "blockingFailureCount": 0,
   "blockingFailures": [],
-  "fileHash": "09bced801ef542bb72bd0718cf2c1a96b132d672dd5042339c28b5dbb9c1b8ad",
+  "fileHash": "de1aeadfec07fbfb1cfaa1b1dc01dba94e9faad582b8c98ea6b1d8793a0992f4",
   "hashedFiles": [
     "app/api/diagnose/route.ts",
     "lib/prompts/diagnose.ts",
     "lib/diagnose.ts",
-    "evals/diagnose-cases.json"
+    "evals/diagnose-cases.json",
+    "lib/prompts/followup.ts",
+    "lib/followup.ts",
+    "app/api/followup-questions/route.ts",
+    "lib/prompts/synthesize.ts",
+    "lib/synthesize.ts",
+    "app/api/synthesize/route.ts",
+    "evals/followup-synthesize-cases.json"
   ]
 }

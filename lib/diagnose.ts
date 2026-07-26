@@ -4,14 +4,12 @@ import { getAnthropicClient } from "@/lib/anthropic";
 import { DIAGNOSE_SYSTEM_PROMPT } from "@/lib/prompts/diagnose";
 import type { Technique } from "@/types/technique";
 
-export const LEAD_SOURCES = ["referral", "repeat customers", "paid ads", "other"] as const;
-
-export interface BusinessContext {
-  avgTicketPrice?: number;
-  activeCustomerCount?: number;
-  crewSize?: number;
-  leadSource?: (typeof LEAD_SOURCES)[number];
-}
+/** Free-text description of the operator's business (ticket prices, crew
+ * size, customer base, equipment, whatever they choose to share) —
+ * replaced the earlier 4 structured fields (avgTicketPrice/
+ * activeCustomerCount/crewSize/leadSource) on 2026-07-26 to let operators
+ * describe their business in their own words instead of a rigid form. */
+export type BusinessContext = string | undefined;
 
 const VALID_EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
 
@@ -127,26 +125,9 @@ export type DiagnoseRunOutcome =
   | { ok: true; result: DiagnoseRunResult }
   | { ok: false; error: string };
 
-function hasBusinessContext(businessContext: BusinessContext): boolean {
-  return Object.values(businessContext).some((v) => v !== undefined);
-}
-
 function buildBusinessContextBlock(businessContext: BusinessContext): string {
-  if (!hasBusinessContext(businessContext)) return "";
-  return `\n\nBusiness context (operator-provided, may be partial — only use what's here):\n${[
-    businessContext.avgTicketPrice !== undefined
-      ? `- Average ticket price: $${businessContext.avgTicketPrice}`
-      : null,
-    businessContext.activeCustomerCount !== undefined
-      ? `- Approximate active/repeat customers: ${businessContext.activeCustomerCount}`
-      : null,
-    businessContext.crewSize !== undefined ? `- Crew size: ${businessContext.crewSize}` : null,
-    businessContext.leadSource !== undefined
-      ? `- Current primary lead source: ${businessContext.leadSource}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join("\n")}`;
+  if (!businessContext || !businessContext.trim()) return "";
+  return `\n\nBusiness context (operator-provided, free text — may be partial, only use what's actually here):\n"""\n${businessContext.trim()}\n"""`;
 }
 
 /**

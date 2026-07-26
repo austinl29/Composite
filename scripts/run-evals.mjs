@@ -7,6 +7,7 @@ import { Client } from "pg";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(__dirname, "..");
 const casesPath = path.join(repoRoot, "evals/diagnose-cases.json");
+const followupSynthesizeCasesPath = path.join(repoRoot, "evals/followup-synthesize-cases.json");
 const lastRunPath = path.join(repoRoot, "evals/.last-run.json");
 
 // Kept in sync with the file list the PreToolUse push-gate hook
@@ -17,6 +18,13 @@ const DIAGNOSIS_RELATED_FILES = [
   "lib/prompts/diagnose.ts",
   "lib/diagnose.ts",
   "evals/diagnose-cases.json",
+  "lib/prompts/followup.ts",
+  "lib/followup.ts",
+  "app/api/followup-questions/route.ts",
+  "lib/prompts/synthesize.ts",
+  "lib/synthesize.ts",
+  "app/api/synthesize/route.ts",
+  "evals/followup-synthesize-cases.json",
 ];
 
 // Failure categories that MUST be zero for the push-gate hook to allow a
@@ -26,11 +34,37 @@ const DIAGNOSIS_RELATED_FILES = [
 // a plausible moderate match on an honest-no-match case, missing concrete-
 // reasoning strings) is treated as known model-behavior variance, not a
 // safety regression, and does not block.
-const BLOCKING_CATEGORIES = new Set(["fabrication", "forbidden-match", "forbidden-pattern", "request-error"]);
+const BLOCKING_CATEGORIES = new Set([
+  "fabrication",
+  "forbidden-match",
+  "forbidden-pattern",
+  "request-error",
+  "malformed-response",
+  "grounded-plan-echo-mismatch",
+  "unmarked-hypothetical",
+]);
 
 const baseUrl = process.env.EVAL_BASE_URL || "https://composite-kappa.vercel.app";
 
-const { cases } = JSON.parse(readFileSync(casesPath, "utf8"));
+const { cases: diagnoseCases } = JSON.parse(readFileSync(casesPath, "utf8"));
+const { cases: followupSynthesizeCases } = JSON.parse(
+  readFileSync(followupSynthesizeCasesPath, "utf8")
+);
+const cases = [...diagnoseCases, ...followupSynthesizeCases];
+
+function wordSet(text) {
+  return new Set((text.toLowerCase().match(/[a-z0-9']+/g) || []).filter((w) => w.length > 2));
+}
+
+function jaccardOverlap(a, b) {
+  const setA = wordSet(a);
+  const setB = wordSet(b);
+  if (setA.size === 0 && setB.size === 0) return 0;
+  let intersection = 0;
+  for (const w of setA) if (setB.has(w)) intersection++;
+  const union = new Set([...setA, ...setB]).size;
+  return union === 0 ? 0 : intersection / union;
+}
 
 // Resolve the live set of valid technique ids/names directly from the DB —
 // this is also the fabrication check's ground truth, independent of whatever
@@ -57,6 +91,175 @@ console.log(`Live technique set: ${techniques.length} techniques\n`);
 const results = [];
 
 for (const c of cases) {
+  if (c.kind === "followup-pair") {
+    const failures = [];
+    let responseA, responseB, httpStatusA, httpStatusB;
+    try {
+      const [techniqueIdA, techniqueIdB] = resolveNames([c.techniqueNameA, c.techniqueNameB]);
+      const [resA, resB] = await Promise.all([
+        fetch(`${baseUrl}/api/followup-questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            techniqueId: techniqueIdA,
+            problem: c.problem,
+            businessContext: c.businessContext || undefined,
+          }),
+        }),
+        fetch(`${baseUrl}/api/followup-questions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            techniqueId: techniqueIdB,
+            problem: c.problem,
+            businessContext: c.businessContext || undefined,
+          }),
+        }),
+      ]);
+      httpStatusA = resA.status;
+      httpStatusB = resB.status;
+      responseA = await resA.json();
+      responseB = await resB.json();
+    } catch (err) {
+      results.push({
+        case: c,
+        pass: false,
+        failures: [{ category: "request-error", message: `Request failed: ${err.message}` }],
+        response: null,
+        httpStatus: null,
+      });
+      continue;
+    }
+
+    if (httpStatusA !== 200 || httpStatusB !== 200) {
+      failures.push({
+        category: "request-error",
+        message: `HTTP status ${httpStatusA}/${httpStatusB}, expected 200/200`,
+      });
+    }
+    const questionsA = Array.isArray(responseA.questions) ? responseA.questions : [];
+    const questionsB = Array.isArray(responseB.questions) ? responseB.questions : [];
+    for (const [label, qs] of [["A", questionsA], ["B", questionsB]]) {
+      if (qs.length < 2 || qs.length > 4) {
+        failures.push({
+          category: "malformed-response",
+          message: `Side ${label} returned ${qs.length} questions, expected 2-4`,
+        });
+      }
+    }
+    const textA = questionsA.map((q) => q.text).join(" ");
+    const textB = questionsB.map((q) => q.text).join(" ");
+    const overlap = jaccardOverlap(textA, textB);
+    const maxOverlap = c.maxWordOverlapRatio ?? 0.5;
+    if (overlap > maxOverlap) {
+      failures.push({
+        category: "insufficient-differentiation",
+        message: `Question sets for "${c.techniqueNameA}" and "${c.techniqueNameB}" overlap too much (Jaccard ${overlap.toFixed(2)} > ${maxOverlap}) — questions don't look technique-specific`,
+      });
+    }
+
+    results.push({
+      case: c,
+      pass: failures.length === 0,
+      failures,
+      response: { techniqueA: { name: c.techniqueNameA, questions: questionsA }, techniqueB: { name: c.techniqueNameB, questions: questionsB }, wordOverlapRatio: overlap },
+      httpStatus: httpStatusA,
+    });
+    continue;
+  }
+
+  if (c.kind === "synthesize") {
+    const failures = [];
+    let response;
+    let httpStatus;
+    try {
+      const [techniqueId] = resolveNames([c.techniqueName]);
+      const res = await fetch(`${baseUrl}/api/synthesize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          techniqueId,
+          confidence: c.confidence,
+          explanation: c.explanation,
+          problem: c.problem,
+          businessContext: c.businessContext || undefined,
+          followupAnswers: c.followupAnswers || [],
+        }),
+      });
+      httpStatus = res.status;
+      response = await res.json();
+    } catch (err) {
+      results.push({
+        case: c,
+        pass: false,
+        failures: [{ category: "request-error", message: `Request failed: ${err.message}` }],
+        response: null,
+        httpStatus: null,
+      });
+      continue;
+    }
+
+    if (httpStatus !== 200) {
+      failures.push({ category: "request-error", message: `HTTP status ${httpStatus}, expected 200` });
+    }
+
+    const groundedPlan = response.groundedPlan || {};
+    if (c.expectGroundedPlanConfidence && groundedPlan.confidence !== c.expectGroundedPlanConfidence) {
+      failures.push({
+        category: "grounded-plan-echo-mismatch",
+        message: `Expected groundedPlan.confidence "${c.expectGroundedPlanConfidence}", got "${groundedPlan.confidence}"`,
+      });
+    }
+    if (
+      c.expectGroundedPlanExplanationEcho &&
+      groundedPlan.explanation !== c.expectGroundedPlanExplanationEcho
+    ) {
+      failures.push({
+        category: "grounded-plan-echo-mismatch",
+        message: `groundedPlan.explanation was not echoed byte-identical. Expected: "${c.expectGroundedPlanExplanationEcho}" Got: "${groundedPlan.explanation}"`,
+      });
+    }
+
+    const insight = response.compositeInsight;
+    const insightText = insight
+      ? [insight.title, insight.body, insight.illustrativeExample].filter(Boolean).join("\n")
+      : "";
+
+    if (Array.isArray(c.forbiddenPatterns)) {
+      for (const patternSrc of c.forbiddenPatterns) {
+        const re = new RegExp(patternSrc, "i");
+        const match = insightText.match(re);
+        if (match) {
+          failures.push({
+            category: "forbidden-pattern",
+            message: `Composite Insight matched forbidden pattern (/${patternSrc}/i): "${match[0]}"`,
+          });
+        }
+      }
+    }
+
+    if (c.illustrativeExampleMustBeMarkedHypothetical && insight && insight.illustrativeExample) {
+      const lower = insight.illustrativeExample.toLowerCase();
+      const markers = c.hypotheticalMarkers || ["imagine", "picture", "suppose", "hypothetical"];
+      const found = markers.some((m) => lower.includes(m.toLowerCase()));
+      if (!found) {
+        failures.push({
+          category: "unmarked-hypothetical",
+          message: `illustrativeExample present but doesn't contain any hypothetical marker (${markers.join(", ")}): "${insight.illustrativeExample}"`,
+        });
+      }
+    }
+
+    results.push({
+      case: c,
+      pass: failures.length === 0,
+      failures,
+      response,
+      httpStatus,
+    });
+    continue;
+  }
+
   const expectedIds = resolveNames(c.expectedTechniqueNames || []);
   const forbiddenIds = resolveNames(c.forbiddenTechniqueNames || []);
 
@@ -66,7 +269,7 @@ for (const c of cases) {
     const res = await fetch(`${baseUrl}/api/diagnose`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ problem: c.problem, ...(c.businessContext || {}) }),
+      body: JSON.stringify({ problem: c.problem, businessContext: c.businessContext || undefined }),
     });
     httpStatus = res.status;
     response = await res.json();
@@ -194,7 +397,7 @@ const blockingFailures = allFailures.filter((f) => BLOCKING_CATEGORIES.has(f.cat
 console.log(`\n=== Summary ===`);
 console.log(`${passCount}/${results.length} passed, ${failCount} failed`);
 console.log(
-  `${blockingFailures.length} blocking failure(s) (fabrication / forbidden-match / forbidden-pattern / request-error)`
+  `${blockingFailures.length} blocking failure(s) (${[...BLOCKING_CATEGORIES].join(" / ")})`
 );
 if (blockingFailures.length > 0) {
   for (const f of blockingFailures) console.log(`    - [${f.caseId}] [${f.category}] ${f.message}`);

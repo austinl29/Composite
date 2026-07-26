@@ -210,25 +210,116 @@ logic). Minimal page at `app/diagnose/page.tsx`.
 - Every match must cite the technique by exact name and get a `confidence` of
   `strong` / `moderate` / `weak` reflecting genuine mechanism fit, not
   keyword overlap.
+- **`businessContext` is free text, not structured fields.** Replaced the
+  earlier 4-field form (avgTicketPrice/activeCustomerCount/crewSize/
+  leadSource) on 2026-07-26 — `/api/diagnose` now takes `{ problem: string,
+  businessContext?: string }` (max 2000 chars), and the UI is a single
+  optional textarea. `lib/diagnose.ts`'s `BusinessContext` type is just
+  `string | undefined`.
 
-## 7. Eval Suite & Push-Gate Hook (critical)
+## 7. Follow-Up & Synthesis Flow — "Composite Insight" (critical)
 
-**Eval suite:** `evals/diagnose-cases.json` (23 cases: strong-match,
-moderate-match, honest-no-match, adversarial — keyword-bait, vague input,
-prompt-injection) + `scripts/run-evals.mjs`, which hits `/api/diagnose` live,
-checks fabrication/forced-match/forbidden-match/expected-match, and writes
-`evals/.last-run.json` (timestamp, pass/fail counts, `blockingFailureCount`,
-a sha256 hash of the diagnosis-related files at run time). Run with:
+A second, separate flow that runs AFTER a diagnose match, per matched
+technique (a "Get a personalized plan →" button on every match card in
+`app/diagnose/DiagnoseForm.tsx`, owned by `app/diagnose/MatchDeepDive.tsx`).
+Three distinct steps, three distinct endpoints — not one combined call:
+
+1. **Follow-up questions** — `lib/prompts/followup.ts` + `lib/followup.ts`
+   (`runFollowupQuestions`) + `app/api/followup-questions/route.ts`. Input:
+   the matched technique's real DB fields (mechanism, targetVerticals,
+   transferTemplate — re-fetched server-side by `techniqueId`, never trusted
+   from the client) plus the operator's problem and free-text business
+   context. Output: 2-4 Zod-structured questions, each `short-option`
+   (2-4 concrete choices) or `free-text`. The system prompt's whole point is
+   that questions must be specific to THIS technique's mechanism, not a
+   generic intake form — verified with an eval that runs the same
+   problem/context against two structurally different techniques (a
+   referral technique vs. a routing/dispatch technique) and checks the
+   returned question sets don't overlap much (Jaccard word-overlap check,
+   see §8).
+
+2. **Operator answers** — plain client-side state in `MatchDeepDive.tsx`,
+   no API call.
+
+3. **Synthesis** — `lib/prompts/synthesize.ts` + `lib/synthesize.ts`
+   (`runSynthesis`) + `app/api/synthesize/route.ts`. Combines the cited
+   technique + free-text context + follow-up answers into two genuinely
+   different outputs in one response:
+   - **`groundedPlan`** — NOT a new generation. It's a pass-through:
+     `confidence`/`explanation` are echoed exactly from what the client
+     already got from `/api/diagnose` (no LLM call involved), while
+     `techniqueId`/`techniqueName`/`sourceType` are re-derived server-side
+     from the live DB by id. This is *how* "unchanged from today's
+     baseline" is actually guaranteed — not by re-prompting and hoping the
+     model reproduces the same text, but by never re-generating it at all.
+   - **`compositeInsight`** — the one new, genuinely creative surface in
+     Composite. Real creative latitude on WHAT to propose (a specific,
+     inventive idea, going beyond the cited technique), bounded by two hard
+     rules that never bend:
+     1. **Never quantify an outcome.** No dollar figure, percentage,
+        customer count, or ROI projection implying a predicted result —
+        even if the operator's own follow-up answers hand over real numbers
+        and directly ask for a projection (tested adversarially, see §8).
+        Using an operator's own numbers to describe *how* an idea would
+        work (e.g. "a $50-off referral credit at your price point") is
+        fine — that's part of the idea's mechanism, not a projected result.
+        The line is outcome vs. mechanism, not "no numbers at all."
+     2. **Never claim citation/database backing.** It's Composite's own
+        reasoning, always — never "backed by our data," "proven," "the
+        database shows." That framing belongs only to the grounded plan.
+     A hypothetical/illustrative example is allowed and encouraged for
+     concreteness, but must be structurally separated into its own
+     `illustrativeExample` field and self-mark as hypothetical in its own
+     wording ("Imagine...", "Picture...") — never presented like a real,
+     verifiable case.
+   - **Defense in depth, same philosophy as the Zod-enum matching
+     grounding:** `lib/synthesize.ts` runs a regex safety net
+     (`QUANTIFIED_OUTCOME_PATTERNS`, `CITATION_CLAIM_PATTERNS`) against the
+     generated insight independent of the system prompt's instructions. On
+     a hit: one retry with an explicit correction, then — if it still
+     violates — suppress the insight entirely (`compositeInsight: null,
+     insightSuppressed: true`) rather than ever surface a violating result.
+     The grounded plan is unaffected either way.
+   - **UI naming/tone (locked in 2026-07-26, user-approved):** "💡
+     Composite Insight" heading, subtext "Our own creative take on your
+     situation — not from the technique library, just Composite reasoning
+     freshly about what you told us." Distinct visual container (indigo
+     gradient card, `app/diagnose/MatchDeepDive.tsx`) — confident/exciting
+     tone, not a disclaimer/warning tone. An `illustrativeExample`, if
+     present, renders in its own labeled "Hypothetical example" sub-block.
+
+## 8. Eval Suite & Push-Gate Hook (critical)
+
+**Eval suite:** two case files, both loaded and run in one invocation of
+`scripts/run-evals.mjs`:
+- `evals/diagnose-cases.json` (23 cases: strong-match, moderate-match,
+  honest-no-match, adversarial — keyword-bait, vague input, prompt-injection)
+  hits `/api/diagnose`, checks fabrication/forced-match/forbidden-match/
+  expected-match.
+- `evals/followup-synthesize-cases.json` (6 cases) hits
+  `/api/followup-questions` and `/api/synthesize`: one `followup-pair` case
+  (checks question sets differ meaningfully across two different technique
+  types — Jaccard word-overlap on the returned question text, must stay
+  below `maxWordOverlapRatio`), and five `synthesize` cases (grounded-plan
+  byte-identical echo check; two adversarial cases that directly ask the
+  follow-up answers to bait a numeric ROI projection; a citation-claim
+  check; a hypothetical-marker check on `illustrativeExample`).
+
+Both write into the same `evals/.last-run.json` (timestamp, pass/fail
+counts, `blockingFailureCount`, a sha256 hash of all diagnosis-related files
+at run time — now 11 files, see the push-gate hook below). Run with:
 ```
 node scripts/run-evals.mjs                          # against production
 EVAL_BASE_URL=http://localhost:3000 node scripts/run-evals.mjs   # against local dev
 ```
-Failure categories: `fabrication`, `forbidden-match`, `forbidden-pattern`,
-and `request-error` are **blocking** (must be zero); `forced-match` (a
-plausible-but-debatable match on an ambiguous honest-no-match case),
-`missing-expected-match`, and `missing-concrete-reasoning` are known
-model-behavior variance and don't block. This split was a deliberate
-decision, not an oversight — see the push-gate hook below.
+Failure categories that are **blocking** (must be zero): `fabrication`,
+`forbidden-match`, `forbidden-pattern`, `request-error`,
+`malformed-response`, `grounded-plan-echo-mismatch`, `unmarked-hypothetical`.
+Non-blocking (known model-behavior variance, not a safety regression):
+`forced-match` (a plausible-but-debatable match on an ambiguous
+honest-no-match case), `missing-expected-match`, `missing-concrete-reasoning`,
+`insufficient-differentiation`. This split was a deliberate decision, not an
+oversight — see the push-gate hook below.
 
 **Eval model policy (2026-07-26):** most eval runs during routine,
 unrelated feature work (UX, schema, hooks) don't need real verification of
@@ -256,15 +347,19 @@ matching quality — they're just confirming nothing broke.
 **Push-gate hook:** `.claude/settings.json` registers a `PreToolUse`
 hook (matcher `Bash`) running `.claude/hooks/check-diagnose-eval.py`
 before every `git push`. It blocks unless `evals/.last-run.json` exists,
-its file hash matches the current on-disk state of
-`app/api/diagnose/route.ts`, `lib/prompts/diagnose.ts`, `lib/diagnose.ts`,
-and `evals/diagnose-cases.json`, and `blockingFailureCount === 0`. Dumb and
-fast on purpose — no LLM calls, just stdin JSON, a regex check for whether
-the command is actually a `git push`, a file hash, and a field read. If it
-blocks, the message tells you to run `node scripts/run-evals.mjs`; if the
-files haven't changed since the last passing run, no re-run is forced.
+its file hash matches the current on-disk state of all 11
+diagnosis-related files (`app/api/diagnose/route.ts`,
+`lib/prompts/diagnose.ts`, `lib/diagnose.ts`, `evals/diagnose-cases.json`,
+`lib/prompts/followup.ts`, `lib/followup.ts`,
+`app/api/followup-questions/route.ts`, `lib/prompts/synthesize.ts`,
+`lib/synthesize.ts`, `app/api/synthesize/route.ts`,
+`evals/followup-synthesize-cases.json`), and `blockingFailureCount === 0`.
+Dumb and fast on purpose — no LLM calls, just stdin JSON, a regex check for
+whether the command is actually a `git push`, a file hash, and a field
+read. If it blocks, the message tells you to run `node scripts/run-evals.mjs`;
+if the files haven't changed since the last passing run, no re-run is forced.
 
-## 8. Where We Are
+## 9. Where We Are
 
 - **Week 1 (Days 1-4):** complete. Schema, live DB, browse/filter UI, technique
   detail view, GitHub repo, deployment pipeline all working.
@@ -276,26 +371,38 @@ files haven't changed since the last passing run, no re-run is forced.
 - **Infrastructure/schema cleanup pass:** git-to-deploy connected and verified
   with a real push, `sourceType` added to schema/DB/all 26 approved entries,
   git identity fixed (`austinl29` / `228589130+austinl29@users.noreply.github.com`).
-- **Week 2 Day 2:** eval suite built (23 cases, see §7) and the diagnose
+- **Week 2 Day 2:** eval suite built (23 cases, see §8) and the diagnose
   page UX redesigned (loading state, confidence-coded match cards,
   `sourceType` surfaced per match, respectful honest-no-match display,
   detail-page links).
-- **Week 3 Day 1:** optional business context (avg ticket price,
-  active/repeat customer count, crew size, primary lead source) added to
-  the diagnose form and prompt — used for concrete reasoning when present,
-  with an explicit anti-fabrication rule against turning those numbers into
-  a projected outcome/dollar figure. All fields optional; no-context flow
-  unchanged.
+- **Week 3 Day 1:** optional business context added to the diagnose form and
+  prompt (originally 4 structured fields — see below for the later
+  free-text replacement) — used for concrete reasoning when present, with
+  an explicit anti-fabrication rule against turning those numbers into a
+  projected outcome/dollar figure.
 - **Model/effort tiering evaluated** via `scripts/eval-config-compare.ts`
   against opus-4-8/medium and sonnet-5/high — neither cleared the bar
   (see `lib/diagnose.ts`'s `HARDCODED_FALLBACK_CONFIG` comment for the full
   evidence). Kept opus-4-8/high as the hardcoded production fallback; later
   made model/effort configurable via `DIAGNOSE_MODEL`/`DIAGNOSE_EFFORT` so
-  routine local eval runs could default to cheap Haiku instead — see §7.
+  routine local eval runs could default to cheap Haiku instead — see §8.
 - **Push-gate hook** built: `git push` is blocked unless a fresh, zero-
   blocking-failure eval run covers the current diagnosis-related files.
-  See §7.
-- **Next up:** the free-text equipment/situation field mentioned during the
-  Week 3 model-tiering pass isn't built yet — when it lands, decide whether
-  it needs its own always-opus-high tier (see the tiering-rule discussion
-  in `lib/diagnose.ts`'s comment history).
+  See §8.
+- **Week 3 Day 2 (2026-07-26):** the 4-field business context replaced with
+  a single free-text box (see §6); built the follow-up-question +
+  synthesis flow and the "Composite Insight" creative surface (see §7),
+  with its own hard anti-fabrication/anti-citation-claim rules enforced by
+  both prompt instruction and an independent regex safety net; expanded the
+  eval suite to 29 cases across 2 files and expanded the push-gate hook's
+  watched-file list to 11 files (see §8). Verified end-to-end in the
+  browser with two structurally different technique types (a referral
+  technique and a routing/dispatch technique) producing visibly different
+  follow-up questions, and confirmed the anti-projection rule holds even
+  when follow-up answers directly ask the model to calculate an ROI from
+  real numbers.
+- **Next up:** nothing specific queued. The free-text equipment/situation
+  field once discussed as a possible future addition was effectively
+  superseded by the free-text business-context box built this pass — if a
+  genuinely separate "describe your equipment" surface is wanted later,
+  decide then whether it needs its own always-opus-high tier.

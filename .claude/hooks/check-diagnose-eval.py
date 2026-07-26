@@ -2,8 +2,11 @@
 """
 PreToolUse (Bash) push-gate: blocks `git push` unless evals/.last-run.json
 shows the eval suite ran against the current state of the diagnosis-related
-files, with zero blocking failures (fabrication, forbidden-technique match,
-or a fabricated-projection pattern hit).
+files (now covering /api/diagnose, /api/followup-questions, and
+/api/synthesize), with zero blocking failures — fabrication, forbidden-
+technique match, a fabricated-projection/citation-claim pattern hit, a
+malformed structured response, a grounded-plan echo mismatch, or an
+unmarked-hypothetical Composite Insight example.
 
 Dumb and fast on purpose: no LLM calls, just a stdin JSON read, one regex
 check for whether this is actually a git-push command, a file-existence
@@ -67,6 +70,13 @@ DIAGNOSIS_RELATED_FILES = [
     "lib/prompts/diagnose.ts",
     "lib/diagnose.ts",
     "evals/diagnose-cases.json",
+    "lib/prompts/followup.ts",
+    "lib/followup.ts",
+    "app/api/followup-questions/route.ts",
+    "lib/prompts/synthesize.ts",
+    "lib/synthesize.ts",
+    "app/api/synthesize/route.ts",
+    "evals/followup-synthesize-cases.json",
 ]
 
 if not last_run_path.exists():
@@ -95,9 +105,9 @@ current_hash = hasher.hexdigest()
 stored_hash = last_run.get("fileHash")
 if stored_hash != current_hash:
     deny(
-        "Blocked: diagnosis-related files (app/api/diagnose/route.ts, "
-        "lib/prompts/diagnose.ts, lib/diagnose.ts, evals/diagnose-cases.json) "
-        "have changed since the last recorded eval run. Run "
+        "Blocked: diagnosis-related files ("
+        + ", ".join(DIAGNOSIS_RELATED_FILES)
+        + ") have changed since the last recorded eval run. Run "
         "`node scripts/run-evals.mjs` and try again."
     )
 
