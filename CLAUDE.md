@@ -175,9 +175,22 @@ Lives in `app/api/diagnose/route.ts` (POST handler) + `lib/prompts/diagnose.ts`
 (system prompt, kept separate so it can be iterated on without touching route
 logic). Minimal page at `app/diagnose/page.tsx`.
 
-- **Model:** `claude-opus-4-8`, `thinking: { type: "adaptive" }`,
-  `output_config: { effort: "high" }`, structured output via
-  `client.messages.parse()` + `zodOutputFormat()`.
+- **Model/effort is configurable, not hardcoded** — `lib/diagnose.ts`
+  (`runDiagnosis`, `DEFAULT_DIAGNOSE_CONFIG`) reads `DIAGNOSE_MODEL` /
+  `DIAGNOSE_EFFORT` from the environment, falling back to
+  `claude-opus-4-8` / `effort: "high"` (`HARDCODED_FALLBACK_CONFIG`) when
+  unset. Production has neither var set, so it always runs the hardcoded
+  opus-4-8/high fallback — see §8 for the local-dev override and why it
+  exists. Structured output via `client.messages.parse()` +
+  `zodOutputFormat()` either way.
+  - **Not every model supports adaptive thinking / effort control.**
+    `claude-haiku-4-5-20251001` rejects both outright (confirmed against
+    the live API, 2026-07-26). `DiagnoseModelConfig.supportsAdaptiveReasoning`
+    is resolved automatically from the model name
+    (`MODELS_WITHOUT_ADAPTIVE_REASONING` in `lib/diagnose.ts`) and gates
+    whether `thinking` and `output_config.effort` are sent at all — if you
+    add another model to `DIAGNOSE_MODEL` that doesn't support this, add it
+    to that list or the request will 400.
 - **The single most important rule: the model must ONLY reference techniques
   that exist in the database.** This is enforced *structurally*, not just by
   instruction — `techniqueId` in the Zod response schema is
@@ -197,10 +210,61 @@ logic). Minimal page at `app/diagnose/page.tsx`.
 - Every match must cite the technique by exact name and get a `confidence` of
   `strong` / `moderate` / `weak` reflecting genuine mechanism fit, not
   keyword overlap.
-- No eval/testing infrastructure exists yet for this agent — that's the next
-  planned step (see below).
 
-## 7. Where We Are
+## 7. Eval Suite & Push-Gate Hook (critical)
+
+**Eval suite:** `evals/diagnose-cases.json` (23 cases: strong-match,
+moderate-match, honest-no-match, adversarial — keyword-bait, vague input,
+prompt-injection) + `scripts/run-evals.mjs`, which hits `/api/diagnose` live,
+checks fabrication/forced-match/forbidden-match/expected-match, and writes
+`evals/.last-run.json` (timestamp, pass/fail counts, `blockingFailureCount`,
+a sha256 hash of the diagnosis-related files at run time). Run with:
+```
+node scripts/run-evals.mjs                          # against production
+EVAL_BASE_URL=http://localhost:3000 node scripts/run-evals.mjs   # against local dev
+```
+Failure categories: `fabrication`, `forbidden-match`, `forbidden-pattern`,
+and `request-error` are **blocking** (must be zero); `forced-match` (a
+plausible-but-debatable match on an ambiguous honest-no-match case),
+`missing-expected-match`, and `missing-concrete-reasoning` are known
+model-behavior variance and don't block. This split was a deliberate
+decision, not an oversight — see the push-gate hook below.
+
+**Eval model policy (2026-07-26):** most eval runs during routine,
+unrelated feature work (UX, schema, hooks) don't need real verification of
+matching quality — they're just confirming nothing broke.
+- **Local/dev default: Haiku.** `.env.local` sets
+  `DIAGNOSE_MODEL=claude-haiku-4-5-20251001` and `DIAGNOSE_EFFORT=medium`.
+  Cheap, fast, good enough to catch a broken route or a regression in
+  ordinary flow. **Not** a substitute for real verification — a real run
+  caught Haiku matching a technique it was explicitly forbidden from
+  matching on an adversarial keyword-bait case (`adversarial-03`,
+  2026-07-26) that opus-4-8/high has never failed. Treat any Haiku-run
+  blocking failure as "needs a real opus pass to know if it's real," not
+  as evidence the agent itself regressed.
+- **Real verification: opus-4-8/effort:high.** Use this — by temporarily
+  removing/commenting the two lines above in `.env.local`, or just hitting
+  the production endpoint directly (which always uses it) — before
+  anything that touches diagnosis reasoning ships, or whenever actually
+  evaluating matching quality/behavior itself (not just "did the route
+  still respond").
+- The push-gate hook (below) doesn't care which model produced a passing
+  run, only that it's current and has zero blocking failures. It is not a
+  substitute for judgment about which mode of verification a given change
+  actually needs.
+
+**Push-gate hook:** `.claude/settings.json` registers a `PreToolUse`
+hook (matcher `Bash`) running `.claude/hooks/check-diagnose-eval.py`
+before every `git push`. It blocks unless `evals/.last-run.json` exists,
+its file hash matches the current on-disk state of
+`app/api/diagnose/route.ts`, `lib/prompts/diagnose.ts`, `lib/diagnose.ts`,
+and `evals/diagnose-cases.json`, and `blockingFailureCount === 0`. Dumb and
+fast on purpose — no LLM calls, just stdin JSON, a regex check for whether
+the command is actually a `git push`, a file hash, and a field read. If it
+blocks, the message tells you to run `node scripts/run-evals.mjs`; if the
+files haven't changed since the last passing run, no re-run is forced.
+
+## 8. Where We Are
 
 - **Week 1 (Days 1-4):** complete. Schema, live DB, browse/filter UI, technique
   detail view, GitHub repo, deployment pipeline all working.
@@ -211,10 +275,27 @@ logic). Minimal page at `app/diagnose/page.tsx`.
   still candidate), loaded into the live DB.
 - **Infrastructure/schema cleanup pass:** git-to-deploy connected and verified
   with a real push, `sourceType` added to schema/DB/all 26 approved entries,
-  `evals/diagnose-cases.json` scaffolded (structure only, no real cases yet),
-  effort-tiering documented as a flagged placeholder in
-  `lib/prompts/diagnose.ts` (no config change), git identity fixed
-  (`austinl29` / `228589130+austinl29@users.noreply.github.com`).
-- **Next up: Week 2 Day 2 — populate `evals/diagnose-cases.json` with real
-  test cases and build a runner for the diagnosis agent.** Nothing built yet
-  for this beyond the placeholder file structure.
+  git identity fixed (`austinl29` / `228589130+austinl29@users.noreply.github.com`).
+- **Week 2 Day 2:** eval suite built (23 cases, see §7) and the diagnose
+  page UX redesigned (loading state, confidence-coded match cards,
+  `sourceType` surfaced per match, respectful honest-no-match display,
+  detail-page links).
+- **Week 3 Day 1:** optional business context (avg ticket price,
+  active/repeat customer count, crew size, primary lead source) added to
+  the diagnose form and prompt — used for concrete reasoning when present,
+  with an explicit anti-fabrication rule against turning those numbers into
+  a projected outcome/dollar figure. All fields optional; no-context flow
+  unchanged.
+- **Model/effort tiering evaluated** via `scripts/eval-config-compare.ts`
+  against opus-4-8/medium and sonnet-5/high — neither cleared the bar
+  (see `lib/diagnose.ts`'s `HARDCODED_FALLBACK_CONFIG` comment for the full
+  evidence). Kept opus-4-8/high as the hardcoded production fallback; later
+  made model/effort configurable via `DIAGNOSE_MODEL`/`DIAGNOSE_EFFORT` so
+  routine local eval runs could default to cheap Haiku instead — see §7.
+- **Push-gate hook** built: `git push` is blocked unless a fresh, zero-
+  blocking-failure eval run covers the current diagnosis-related files.
+  See §7.
+- **Next up:** the free-text equipment/situation field mentioned during the
+  Week 3 model-tiering pass isn't built yet — when it lands, decide whether
+  it needs its own always-opus-high tier (see the tiering-rule discussion
+  in `lib/diagnose.ts`'s comment history).

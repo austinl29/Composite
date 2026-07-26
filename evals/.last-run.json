@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-07-26T00:45:38.146Z",
+  "baseUrl": "http://localhost:3000",
+  "totalCases": 23,
+  "passCount": 18,
+  "failCount": 5,
+  "blockingFailureCount": 0,
+  "blockingFailures": [],
+  "fileHash": "09bced801ef542bb72bd0718cf2c1a96b132d672dd5042339c28b5dbb9c1b8ad",
+  "hashedFiles": [
+    "app/api/diagnose/route.ts",
+    "lib/prompts/diagnose.ts",
+    "lib/diagnose.ts",
+    "evals/diagnose-cases.json"
+  ]
+}

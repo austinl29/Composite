@@ -11,9 +11,9 @@ const limit = process.env.EVAL_LIMIT ? Number(process.env.EVAL_LIMIT) : undefine
 const cases = limit ? allCases.slice(0, limit) : allCases;
 
 const ALL_CONFIGS: { key: string; label: string; config: DiagnoseModelConfig }[] = [
-  { key: "a", label: "a) opus-4-8 / effort:high (baseline)", config: { model: "claude-opus-4-8", effort: "high" } },
-  { key: "b", label: "b) opus-4-8 / effort:medium", config: { model: "claude-opus-4-8", effort: "medium" } },
-  { key: "c", label: "c) sonnet-5 / effort:high", config: { model: "claude-sonnet-5", effort: "high" } },
+  { key: "a", label: "a) opus-4-8 / effort:high (baseline)", config: { model: "claude-opus-4-8", effort: "high", supportsAdaptiveReasoning: true } },
+  { key: "b", label: "b) opus-4-8 / effort:medium", config: { model: "claude-opus-4-8", effort: "medium", supportsAdaptiveReasoning: true } },
+  { key: "c", label: "c) sonnet-5 / effort:high", config: { model: "claude-sonnet-5", effort: "high", supportsAdaptiveReasoning: true } },
 ];
 const configFilter = process.env.CONFIG_FILTER
   ? new Set(process.env.CONFIG_FILTER.split(","))
