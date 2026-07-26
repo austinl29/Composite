@@ -287,6 +287,42 @@ Three distinct steps, three distinct endpoints — not one combined call:
      gradient card, `app/diagnose/MatchDeepDive.tsx`) — confident/exciting
      tone, not a disclaimer/warning tone. An `illustrativeExample`, if
      present, renders in its own labeled "Hypothetical example" sub-block.
+   - **`pathForward`** — a fourth, required field on the same structured
+     synthesis call (`lib/prompts/synthesize.ts`, `CompositeInsightSchema`
+     in `lib/synthesize.ts`). A short paragraph (3-5 sentences), written
+     after and informed by `compositeInsight`, describing in general terms
+     what actually scoping and building the idea out with Composite could
+     look like. Same tone/structure regardless of the idea's complexity —
+     deliberately not differentiated. Bound by the same two hard rules as
+     `compositeInsight` (never quantify an outcome, never claim citation/
+     database backing) PLUS one more: never commits to a specific price,
+     timeline, or technical scope — those are real decisions made in an
+     actual conversation with the founder, not something the model
+     predetermines. Ends by naturally opening toward "worth exploring
+     further," not a hard pitch. Covered by the same independent regex
+     safety net as `compositeInsight` (`findSafetyViolation` in
+     `lib/synthesize.ts` scans title+body+illustrativeExample+pathForward
+     together) — a violation triggers the same retry-then-suppress
+     behavior, suppressing the whole insight (including `pathForward`),
+     never a partial/silently-edited one. Renders directly under the
+     Composite Insight card in `MatchDeepDive.tsx`, labeled "What building
+     this out could look like."
+
+**Lead capture (added 2026-07-26):** after both `compositeInsight` and
+`pathForward` are rendered — never before value has been delivered —
+`MatchDeepDive.tsx` shows a simple form ("Want to scope this out
+together?": name, email required; phone optional). Submits to
+`app/api/leads/route.ts` (`POST`, public, no auth), which re-derives
+`techniqueName` from the live DB by `techniqueId` (same grounding
+discipline as the other routes — never trusts a client-supplied name) and
+inserts into the `leads` table (migration
+`supabase/migrations/0004_create_leads.sql`): `id`, `name`, `email`
+(required), `phone` (optional), `problem`, `technique_id` (FK to
+`techniques`), `technique_name`, `business_context`, `followup_answers`
+(jsonb), `grounded_plan_text`, `composite_insight_text`,
+`path_forward_text`, `submitted_at`. Basic validation only (non-empty
+name, `EMAIL_PATTERN` regex on email) — no email sending, no CRM, no
+admin/leads-viewing UI; leads are queried directly against the DB for now.
 
 ## 8. Eval Suite & Push-Gate Hook (critical)
 
@@ -296,18 +332,22 @@ Three distinct steps, three distinct endpoints — not one combined call:
   honest-no-match, adversarial — keyword-bait, vague input, prompt-injection)
   hits `/api/diagnose`, checks fabrication/forced-match/forbidden-match/
   expected-match.
-- `evals/followup-synthesize-cases.json` (6 cases) hits
+- `evals/followup-synthesize-cases.json` (7 cases) hits
   `/api/followup-questions` and `/api/synthesize`: one `followup-pair` case
   (checks question sets differ meaningfully across two different technique
   types — Jaccard word-overlap on the returned question text, must stay
-  below `maxWordOverlapRatio`), and five `synthesize` cases (grounded-plan
-  byte-identical echo check; two adversarial cases that directly ask the
-  follow-up answers to bait a numeric ROI projection; a citation-claim
+  below `maxWordOverlapRatio`), and six `synthesize` cases (grounded-plan
+  byte-identical echo check; three adversarial cases that directly ask the
+  follow-up answers to bait a numeric ROI projection or a price/timeline
+  commitment — one aimed specifically at `pathForward`; a citation-claim
   check; a hypothetical-marker check on `illustrativeExample`).
+  `forbiddenPatterns` checks run against the combined
+  title+body+illustrativeExample+`pathForward` text, so any of the four
+  fields tripping a pattern is caught the same way.
 
 Both write into the same `evals/.last-run.json` (timestamp, pass/fail
 counts, `blockingFailureCount`, a sha256 hash of all diagnosis-related files
-at run time — now 11 files, see the push-gate hook below). Run with:
+at run time — now 12 files, see the push-gate hook below). Run with:
 ```
 node scripts/run-evals.mjs                          # against production
 EVAL_BASE_URL=http://localhost:3000 node scripts/run-evals.mjs   # against local dev
@@ -347,13 +387,14 @@ matching quality — they're just confirming nothing broke.
 **Push-gate hook:** `.claude/settings.json` registers a `PreToolUse`
 hook (matcher `Bash`) running `.claude/hooks/check-diagnose-eval.py`
 before every `git push`. It blocks unless `evals/.last-run.json` exists,
-its file hash matches the current on-disk state of all 11
+its file hash matches the current on-disk state of all 12
 diagnosis-related files (`app/api/diagnose/route.ts`,
 `lib/prompts/diagnose.ts`, `lib/diagnose.ts`, `evals/diagnose-cases.json`,
 `lib/prompts/followup.ts`, `lib/followup.ts`,
 `app/api/followup-questions/route.ts`, `lib/prompts/synthesize.ts`,
 `lib/synthesize.ts`, `app/api/synthesize/route.ts`,
-`evals/followup-synthesize-cases.json`), and `blockingFailureCount === 0`.
+`evals/followup-synthesize-cases.json`, `app/api/leads/route.ts`), and
+`blockingFailureCount === 0`.
 Dumb and fast on purpose — no LLM calls, just stdin JSON, a regex check for
 whether the command is actually a `git push`, a file hash, and a field
 read. If it blocks, the message tells you to run `node scripts/run-evals.mjs`;
@@ -401,8 +442,22 @@ if the files haven't changed since the last passing run, no re-run is forced.
   follow-up questions, and confirmed the anti-projection rule holds even
   when follow-up answers directly ask the model to calculate an ROI from
   real numbers.
+- **Week 3 Day 3 (2026-07-26):** added `pathForward` as a fourth field on
+  the synthesis call (see §7) — a non-committal "what building this out
+  with Composite could look like" paragraph, bound by the same
+  anti-fabrication/anti-citation rules as `compositeInsight` plus a new
+  no-price/no-timeline-commitment rule; and added lead capture (`leads`
+  table via `supabase/migrations/0004_create_leads.sql`,
+  `app/api/leads/route.ts`, form in `MatchDeepDive.tsx` appearing only
+  after both `compositeInsight` and `pathForward` are shown — see §7).
+  Expanded the eval suite to 30 cases (added one case aimed specifically
+  at tempting `pathForward` with a price/timeline/ROI ask) and the
+  push-gate hook's watched-file list to 12 files (see §8). No admin/leads
+  UI built yet — leads are queried directly against the DB.
 - **Next up:** nothing specific queued. The free-text equipment/situation
   field once discussed as a possible future addition was effectively
-  superseded by the free-text business-context box built this pass — if a
+  superseded by the free-text business-context box built earlier — if a
   genuinely separate "describe your equipment" surface is wanted later,
-  decide then whether it needs its own always-opus-high tier.
+  decide then whether it needs its own always-opus-high tier. An admin
+  view for browsing captured leads is a natural next step whenever that
+  becomes a priority.

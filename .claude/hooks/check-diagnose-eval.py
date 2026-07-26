@@ -77,6 +77,7 @@ DIAGNOSIS_RELATED_FILES = [
     "lib/synthesize.ts",
     "app/api/synthesize/route.ts",
     "evals/followup-synthesize-cases.json",
+    "app/api/leads/route.ts",
 ]
 
 if not last_run_path.exists():

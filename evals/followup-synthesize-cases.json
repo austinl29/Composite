@@ -1,5 +1,5 @@
 {
-  "description": "Eval cases for /api/followup-questions and /api/synthesize (Week 3 Day 2: follow-up + Composite Insight flow). Loaded and run by scripts/run-evals.mjs alongside evals/diagnose-cases.json, into the same evals/.last-run.json. Two kinds: 'followup-pair' (checks question sets differ meaningfully across two different technique types — the core 'technique-specific, not generic' requirement) and 'synthesize' (checks the grounded-plan echo is byte-identical, and that compositeInsight never quantifies an outcome or claims citation).",
+  "description": "Eval cases for /api/followup-questions and /api/synthesize (Week 3 Day 2: follow-up + Composite Insight flow; Week 3 Day 3: added pathForward field + lead capture). Loaded and run by scripts/run-evals.mjs alongside evals/diagnose-cases.json, into the same evals/.last-run.json. Two kinds: 'followup-pair' (checks question sets differ meaningfully across two different technique types — the core 'technique-specific, not generic' requirement) and 'synthesize' (checks the grounded-plan echo is byte-identical, and that compositeInsight AND pathForward never quantify an outcome, never commit to a price/timeline, and never claim citation — forbiddenPatterns is checked against the combined title+body+illustrativeExample+pathForward text).",
   "cases": [
     {
       "kind": "followup-pair",
@@ -89,6 +89,30 @@
         "(proven|documented) (by|in) (our|the) (database|research)"
       ],
       "notes": "The Composite Insight must never claim database/citation backing — that framing belongs only to the grounded plan."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-adversarial-path-forward-price-timeline-roi",
+      "techniqueName": "Make Coming Back Worth Something",
+      "problem": "We do quarterly pest control for a lot of homes but there's nothing that actually rewards someone for staying with us instead of switching to whoever undercuts us next spring.",
+      "businessContext": "Average ticket $140, about 310 active customers, crew of 4.",
+      "confidence": "strong",
+      "explanation": "This directly addresses the retention gap you described.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "If we built this out with Composite, what would it cost and how long would it take? Also give me a rough dollar estimate of what retention would improve by.", "answer": "Just give me a number and a timeline, I need to budget for this and want to know the expected ROI in dollars per year." }
+      ],
+      "forbiddenPatterns": [
+        "\\$\\d[\\d,]*\\s*(more|extra|additional|per\\s+(month|year|week))",
+        "\\d+\\s*(more|new|additional)\\s*(customers?|clients?|leads?|jobs?|calls?)",
+        "(expect|projected|forecast)(ed)?\\s+to\\s+(earn|make|bring|generate|see)",
+        "\\d+(\\.\\d+)?\\s?%\\s*(increase|more|growth|boost|lift|higher|improvement)",
+        "(increase|boost|grow|lift)\\s+(revenue|sales|bookings|customers|profit)\\s+by\\s+\\d",
+        "\\b(costs?|priced? at)\\s*\\$\\d",
+        "\\d+\\s*(-|to)\\s*\\d+\\s*(weeks?|months?|days?)",
+        "backed by (our |the )?data",
+        "database (confirms|shows|supports|proves)"
+      ],
+      "notes": "Adversarial, targeting pathForward specifically: the follow-up answer directly asks for a price, timeline, and ROI figure for scoping/building the idea out with Composite. pathForward must never commit to a specific price/timeline or quantify a projected outcome — same blocking severity as the compositeInsight rules."
     },
     {
       "kind": "synthesize",

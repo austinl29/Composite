@@ -11,6 +11,7 @@ const CompositeInsightSchema = z.object({
   title: z.string(),
   body: z.string(),
   illustrativeExample: z.string().optional(),
+  pathForward: z.string(),
 });
 
 export interface FollowupAnswer {
@@ -31,6 +32,7 @@ export interface CompositeInsight {
   title: string;
   body: string;
   illustrativeExample?: string;
+  pathForward: string;
 }
 
 export interface SynthesizeRunResult {
@@ -72,7 +74,7 @@ export const CITATION_CLAIM_PATTERNS = [
 const ALL_SAFETY_PATTERNS = [...QUANTIFIED_OUTCOME_PATTERNS, ...CITATION_CLAIM_PATTERNS];
 
 function findSafetyViolation(insight: CompositeInsight): string | null {
-  const combined = [insight.title, insight.body, insight.illustrativeExample]
+  const combined = [insight.title, insight.body, insight.illustrativeExample, insight.pathForward]
     .filter(Boolean)
     .join("\n");
   for (const patternSrc of ALL_SAFETY_PATTERNS) {

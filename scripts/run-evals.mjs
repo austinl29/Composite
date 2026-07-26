@@ -25,6 +25,7 @@ const DIAGNOSIS_RELATED_FILES = [
   "lib/synthesize.ts",
   "app/api/synthesize/route.ts",
   "evals/followup-synthesize-cases.json",
+  "app/api/leads/route.ts",
 ];
 
 // Failure categories that MUST be zero for the push-gate hook to allow a
@@ -222,7 +223,9 @@ for (const c of cases) {
 
     const insight = response.compositeInsight;
     const insightText = insight
-      ? [insight.title, insight.body, insight.illustrativeExample].filter(Boolean).join("\n")
+      ? [insight.title, insight.body, insight.illustrativeExample, insight.pathForward]
+          .filter(Boolean)
+          .join("\n")
       : "";
 
     if (Array.isArray(c.forbiddenPatterns)) {

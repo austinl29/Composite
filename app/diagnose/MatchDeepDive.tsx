@@ -21,6 +21,7 @@ interface CompositeInsight {
   title: string;
   body: string;
   illustrativeExample?: string;
+  pathForward: string;
 }
 
 interface SynthesizeResult {
@@ -30,9 +31,11 @@ interface SynthesizeResult {
 }
 
 type Stage = "idle" | "loading-questions" | "questions" | "loading-synthesis" | "result";
+type LeadStage = "idle" | "submitting" | "submitted";
 
 export default function MatchDeepDive({
   techniqueId,
+  techniqueName,
   confidence,
   explanation,
   problem,
@@ -51,6 +54,12 @@ export default function MatchDeepDive({
   const [questions, setQuestions] = useState<FollowupQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<SynthesizeResult | null>(null);
+
+  const [leadStage, setLeadStage] = useState<LeadStage>("idle");
+  const [leadError, setLeadError] = useState<string | null>(null);
+  const [leadName, setLeadName] = useState("");
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadPhone, setLeadPhone] = useState("");
 
   async function startDeepDive() {
     setStage("loading-questions");
@@ -109,6 +118,50 @@ export default function MatchDeepDive({
     } catch {
       setError("Request failed. Try again.");
       setStage("questions");
+    }
+  }
+
+  async function submitLead(e: React.FormEvent) {
+    e.preventDefault();
+    if (!result) return;
+    setLeadStage("submitting");
+    setLeadError(null);
+    try {
+      const followupAnswers = questions.map((q) => ({
+        questionId: q.id,
+        questionText: q.text,
+        answer: answers[q.id] ?? "",
+      }));
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: leadName,
+          email: leadEmail,
+          phone: leadPhone || undefined,
+          problem,
+          techniqueId,
+          businessContext: businessContext || undefined,
+          followupAnswers,
+          groundedPlanText: result.groundedPlan.explanation,
+          compositeInsightText: result.compositeInsight
+            ? [result.compositeInsight.title, result.compositeInsight.body, result.compositeInsight.illustrativeExample]
+                .filter(Boolean)
+                .join("\n\n")
+            : undefined,
+          pathForwardText: result.compositeInsight?.pathForward,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLeadError(data.error ?? "Something went wrong.");
+        setLeadStage("idle");
+        return;
+      }
+      setLeadStage("submitted");
+    } catch {
+      setLeadError("Request failed. Try again.");
+      setLeadStage("idle");
     }
   }
 
@@ -223,12 +276,70 @@ export default function MatchDeepDive({
                 </p>
               </div>
             )}
+            <div className="mt-4 border-t border-indigo-200/70 pt-3 dark:border-indigo-900/50">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+                What building this out could look like
+              </p>
+              <p className="mt-1.5 text-sm leading-6 text-indigo-900 dark:text-indigo-200">
+                {result.compositeInsight.pathForward}
+              </p>
+            </div>
           </div>
         ) : (
           <p className="text-xs text-zinc-400 dark:text-zinc-600">
             We couldn&apos;t put together a Composite Insight for this one this time —
             the plan above still stands on its own.
           </p>
+        )}
+
+        {leadStage === "submitted" ? (
+          <p className="rounded-md border border-zinc-200 p-4 text-sm text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+            Thanks — we&apos;ve got your details for &quot;{techniqueName}&quot; and will follow up to
+            talk through scoping this out.
+          </p>
+        ) : (
+          <form
+            onSubmit={submitLead}
+            className="flex flex-col gap-3 rounded-md border border-zinc-200 p-4 dark:border-zinc-800"
+          >
+            <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              Want to scope this out together?
+            </p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-500">
+              Leave your details and we&apos;ll follow up to talk through turning this into something real.
+            </p>
+            <input
+              type="text"
+              required
+              placeholder="Name"
+              value={leadName}
+              onChange={(e) => setLeadName(e.target.value)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            <input
+              type="email"
+              required
+              placeholder="Email"
+              value={leadEmail}
+              onChange={(e) => setLeadEmail(e.target.value)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            <input
+              type="tel"
+              placeholder="Phone (optional)"
+              value={leadPhone}
+              onChange={(e) => setLeadPhone(e.target.value)}
+              className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-black dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+            />
+            {leadError && <p className="text-sm text-red-600 dark:text-red-400">{leadError}</p>}
+            <button
+              type="submit"
+              disabled={leadStage === "submitting"}
+              className="self-start rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
+            >
+              {leadStage === "submitting" ? "Sending…" : "Get in touch →"}
+            </button>
+          </form>
         )}
       </div>
     );
