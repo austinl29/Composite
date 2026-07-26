@@ -6,24 +6,57 @@
       "name": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
       "sourceIndustry": "package delivery / logistics",
       "sourceCompany": "UPS",
-      "mechanism": "A driver or dispatcher sequencing stops by habit or instinct leaves real efficiency on the table across a full day of jobs. Software that optimizes the sequence — down to details as granular as avoiding left turns across oncoming traffic — finds savings too small to notice on any single stop but enormous across hundreds of stops a day.",
+      "mechanism": "A driver or dispatcher sequencing stops by habit or instinct leaves real efficiency on the table across a full day of jobs. Software that optimizes the sequence \u2014 down to details as granular as avoiding left turns across oncoming traffic \u2014 finds savings too small to notice on any single stop but enormous across hundreds of stops a day.",
       "evidence": "UPS's ORION route optimization system, deployed to more than 35,000 of its roughly 55,000 U.S. drivers by December 2015, is estimated to save the company $300-400 million annually at full deployment, cut 100 million delivery miles and 10 million gallons of fuel per year, and had already saved more than $320 million as of that date; the project won the 2016 INFORMS Franz Edelman Award, given for real-world operations research impact.",
       "sourceType": "first-party-research",
-      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting"],
-      "transferTemplate": "Instead of dispatching jobs in whatever order they came in or letting each tech plan their own route by feel, sequence the day's stops algorithmically — even a simple 'group by proximity and time window' rule beats first-come-first-served. The gains per stop are small and easy to dismiss, but they compound across every tech, every day, into a meaningful reduction in windshield time and fuel cost.",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting"
+      ],
+      "transferTemplate": "Instead of dispatching jobs in whatever order they came in or letting each tech plan their own route by feel, sequence the day's stops algorithmically \u2014 even a simple 'group by proximity and time window' rule beats first-come-first-served. The gains per stop are small and easy to dismiss, but they compound across every tech, every day, into a meaningful reduction in windshield time and fuel cost.",
       "sourceUrl": "https://www.informs.org/Impact/O.R.-Analytics-Success-Stories/Optimizing-Delivery-Routes",
       "status": "approved"
     },
     {
       "name": "Let Customers Reserve a Slot Instead of Waiting in Line",
-      "sourceIndustry": "food & beverage retail",
-      "sourceCompany": "Starbucks",
-      "mechanism": "When demand all arrives at once with no way to spread it out, a business either overstaffs for the peak or makes everyone wait during it. Letting customers place and schedule their order ahead of time shifts some of that peak demand earlier and smooths the load on staff, instead of the business absorbing it all in one crush.",
-      "evidence": "Starbucks' Mobile Order & Pay grew from 4% to 5% of U.S. transactions during its early rollout (Q3 2015, per the company's own disclosed figures) and has continued climbing every year since, becoming a significant share of transactions especially during the morning rush, as reported consistently across multiple independent trade publications tracking the company's quarterly results.",
-      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control"],
-      "transferTemplate": "Offer specific, narrow appointment windows customers can book online in advance instead of only taking same-day 'can someone come now' calls. Spreading requests across the week ahead of time means the office isn't fielding a flood of calls every morning and the crew's day is planned in advance, not assembled call by call as it happens.",
-      "sourceUrl": "https://www.nrn.com/restaurant-technology/starbucks-mobile-order-pay-usage-increases",
+      "sourceIndustry": "food & beverage / hospitality (capacity-constrained services broadly)",
+      "sourceCompany": null,
+      "mechanism": "Once a business already takes advance bookings, how it allocates that booked capacity affects how many customers it can actually serve. Locking each booking to one specific slot or resource at the moment it's made forces a safety buffer sized for that one booking's worst case. Keeping the assignment flexible \u2014 matched to available capacity in real time rather than fixed in advance \u2014 lets the natural variation across individual bookings average out over the whole pool of capacity, measurably increasing how many customers get served during the busiest periods without adding any actual capacity.",
+      "evidence": "RE-SOURCED (2026-07-26, replacing the prior Starbucks/adoption-stat source, which a Day-3-equivalent review correctly flagged as not establishing the mechanism): a peer-reviewed paper by Gary M. Thompson and Robert J. Kwortnik (Cornell University School of Hotel Administration), published in the Journal of Service Research (2008, 10(May), pp. 335-46), states directly that capacity-constrained service businesses \"use reservations to smooth demand, to optimize capacity, and to minimize queues, which detract from the customer experience,\" and empirically demonstrates via two large simulation studies (1,920 and 1,440 scenarios) that well-managed reservation handling measurably increases service efficiency and lets a business serve more customers during peak periods without adding capacity.",
+      "sourceType": "peer-reviewed",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control"
+      ],
+      "transferTemplate": "If a home-service business already books jobs in advance, the gain here comes from how those bookings get assigned, not just from taking advance bookings at all. Locking a booking to one specific tech, truck, or time slot the moment it's scheduled forces padding sized for that one job's worst case. Keeping the tech/truck assignment flexible \u2014 decided close to the actual day rather than fixed at booking time \u2014 lets the business absorb more jobs during its busiest weeks with the same crew and trucks, the same way letting a restaurant assign any open table (instead of locking a reservation to one specific table) let it serve more covers without adding tables.",
+      "sourceUrl": "https://journals.sagepub.com/doi/10.1177/1094670508314267",
       "status": "candidate"
+    },
+    {
+      "name": "Turn the Whole Crew Into a Pit Crew for the Handoff Moment",
+      "sourceIndustry": "commercial aviation",
+      "sourceCompany": "Southwest Airlines",
+      "mechanism": "The handoff between jobs (a plane landing and departing again, a crew finishing one stop and starting the next) is dead time that doesn't need to be \u2014 treated as one continuous, choreographed team task rather than a series of sequential individual tasks, it can be compressed dramatically, and every minute saved on the handoff is a minute added back to productive capacity.",
+      "evidence": "Facing near-bankruptcy in 1972 with only three aircraft and (per Duke Corporate Education's account) roughly $143 in its checking account, Southwest sold its fourth plane and committed to a 10-minute gate turnaround \u2014 flight attendants, ground crew, and refueling teams working simultaneously rather than sequentially, modeled explicitly on NASCAR pit-stop coordination \u2014 so that three aircraft could maintain the flight schedule that previously required four. The story, including the specific financial details, is independently corroborated by aviation trade outlet APEX (apex.aero).",
+      "sourceType": "secondary-verified",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "The gap between one job finishing and the next one starting \u2014 packing up, restocking the truck, briefing the next address \u2014 is usually treated as unavoidable overhead each tech handles alone. Treating it instead as a choreographed handoff (a standard restocking checklist, materials pre-staged the night before, a clear next-job briefing built into the drive) compresses dead time the same way a pit-crew mentality compressed an airline's gate turnaround, freeing up real capacity without adding trucks or staff.",
+      "sourceUrl": "https://www.dukece.com/insights/maximum-velocity/",
+      "status": "approved"
     }
   ]
 }

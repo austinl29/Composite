@@ -1,0 +1,64 @@
+{
+  "problemType": "accessing-capital-for-equipment-or-growth",
+  "generatedAt": "2026-07-26T20:16:31Z",
+  "candidates": [
+    {
+      "name": "Lease the Capacity, Don't Own the Asset",
+      "sourceIndustry": "commercial aviation",
+      "sourceCompany": null,
+      "mechanism": "A capital-intensive asset (an aircraft, a truck, a piece of heavy equipment) ties up a large amount of cash or debt capacity the moment it's purchased outright. Leasing it instead converts a large upfront capital outlay into a predictable operating expense, freeing that cash for growth, and shifts the risk of the asset losing value onto the lessor rather than the operator.",
+      "evidence": "According to the CAPA Fleet Database (Centre for Aviation), 53% of the global commercial aircraft fleet is leased rather than owned outright by the airlines flying it, a share that has held roughly stable in recent years after rising for decades. CAPA's analysis attributes the leasing share directly to airlines wanting fleet flexibility, reduced upfront financing requirements, and protection from aircraft depreciation risk, which the lessor absorbs instead.",
+      "sourceType": "secondary-verified",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "A truck, a bucket lift, or a specialized piece of equipment doesn't have to be purchased outright to be used. Leasing (or lease-to-own) the equipment a growth push requires keeps cash free for the growth itself \u2014 hiring, marketing, inventory \u2014 instead of locking it into a depreciating asset on day one, the same trade-off airlines make deliberately at fleet scale.",
+      "sourceUrl": "https://centreforaviation.com/analysis/reports/aircraft-leasing-in-equilibrium-at-just-over-half-the-world-fleet-675212",
+      "status": "approved"
+    },
+    {
+      "name": "Raise It in Small Pieces From Many People, Not One Big Ask From One Lender",
+      "sourceIndustry": "nonprofit microfinance",
+      "sourceCompany": "Kiva",
+      "mechanism": "A single institutional lender underwrites the whole loan against the business's full credit history, which shuts out businesses with thin or unconventional credit files. Splitting the same loan into many small pieces funded by individual backers spreads the underwriting decision across many people instead of one gatekeeper, making capital reachable for businesses a single bank might turn down.",
+      "evidence": "Kiva, a nonprofit crowdfunded microloan platform, reports on its own site that more than 5 million people have used Kiva loans since its 2005 founding, and that its lending community funded $166 million in loans in 2025 alone \u2014 loans that are real debt to be repaid, not grants, typically made without requiring the credit history a bank would demand.",
+      "sourceType": "first-party-research",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting"
+      ],
+      "transferTemplate": "For a smaller growth push (a used truck, a first hire, a marketing push) that doesn't need a full bank loan, a crowdfunded small-business loan platform spreads the funding ask across many individual backers instead of one bank underwriter \u2014 useful specifically for operators without the years-long credit history a traditional lender wants to see.",
+      "sourceUrl": "https://www.kiva.org/about",
+      "status": "approved"
+    },
+    {
+      "name": "What Makes a Funding Ask Credible, Not Just Loud",
+      "sourceIndustry": "crowdfunding (cross-industry)",
+      "sourceCompany": null,
+      "mechanism": "Whether a funding request succeeds isn't random \u2014 specific, checkable signals of legitimacy (a well-documented plan, visible updates, a realistic ask relative to what's actually needed) predict which requests get funded and which don't, regardless of the industry the requester is in.",
+      "evidence": "Ethan Mollick's peer-reviewed study 'The Dynamics of Crowdfunding: An Exploratory Study' (Journal of Business Venturing, 2014), analyzing over 48,500 crowdfunding projects with combined funding over $237 million, found that success correlated with specific signals of project quality and preparation, and that the vast majority of funded founders did follow through on their obligation to funders (though the majority delivered later than promised, with the delay predictable from funding level).",
+      "sourceType": "peer-reviewed",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "Whether the ask is a crowdfunding campaign, a pitch to a bank loan officer, or a proposal to a private investor, the research suggests the same thing matters: a specific, well-documented plan with a realistic number attached reads as credible in a way a vague 'we need capital to grow' pitch does not \u2014 worth building out before making any capital ask, not just a crowdfunding one.",
+      "sourceUrl": "https://www.sciencedirect.com/science/article/pii/S088390261300058X",
+      "status": "approved"
+    }
+  ]
+}

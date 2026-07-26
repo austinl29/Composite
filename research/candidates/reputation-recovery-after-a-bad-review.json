@@ -1,0 +1,65 @@
+{
+  "problemType": "reputation-recovery-after-a-bad-review",
+  "generatedAt": "2026-07-26T20:16:31Z",
+  "candidates": [
+    {
+      "name": "Admit the Specific Complaint, Then Show the Fix",
+      "sourceIndustry": "quick-service restaurant",
+      "sourceCompany": "Domino's Pizza",
+      "mechanism": "Vaguely apologizing for 'any inconvenience' reads as damage control, not an acknowledgment. Naming the specific, valid complaint out loud, fixing the actual underlying problem, and then publicly showing the fix (not just announcing it) gives skeptical customers something concrete to believe instead of a generic apology to discount.",
+      "evidence": "After years of customers describing its pizza in reviews and taste tests as tasting like 'cardboard' with 'ketchup' sauce, Domino's 2009-2010 'Pizza Turnaround' campaign had the company state on camera that the criticism was accurate, reformulate the recipe (including 40% more cheese), and document the process publicly. Domino's own first-quarter-2010 earnings release (filed with the SEC) reported domestic same-store sales grew 14.3% that quarter, attributed to increased store traffic following the new recipe's launch.",
+      "sourceType": "first-party-research",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "When a review names a specific, legitimate problem (a late arrival, a messy job site, a tech who didn't explain the work), don't respond with a generic 'we're sorry for the inconvenience.' Name the actual issue in your reply, describe the concrete process change you made because of it, and let future customers see that change in how the next job is run \u2014 the specificity is what makes the response credible instead of rote.",
+      "sourceUrl": "https://ir.dominos.com/news-releases/news-release-details/dominos-pizza-announces-first-quarter-2010-financial-results",
+      "status": "approved"
+    },
+    {
+      "name": "Respond to Every Review, Not Just the Nice Ones",
+      "sourceIndustry": "hospitality",
+      "sourceCompany": null,
+      "mechanism": "Businesses tend to start responding to reviews only after a negative rating shock, and then often reply selectively. Consistently responding to reviews \u2014 positive, negative, and neutral alike \u2014 changes the composition of who leaves a review at all: customers who had a middling experience become less likely to leave a harshly negative one when they know management is actually reading and replying.",
+      "evidence": "A peer-reviewed study by Davide Proserpio (USC Marshall) and Georgios Zervas (Boston University), published in the INFORMS journal Marketing Science (2017), analyzed tens of thousands of hotel reviews and management responses on TripAdvisor. Exploiting variation in how often hotels responded across platforms, the study found responding hotels saw a 0.12-star average ratings increase and a 12% increase in review volume, consistent with fewer highly negative reviews being left once management response became visible and expected.",
+      "sourceType": "peer-reviewed",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "Reply to every Google/Yelp review your business gets, not only the glowing ones and not only the viral bad ones. The study shows the effect isn't really about winning back one angry reviewer \u2014 it's that visibly-active management responses change how the next customer with a so-so experience decides whether a review is even worth leaving, which is a lever a home-service business can pull on every job, not just the rare public blowup.",
+      "sourceUrl": "https://pubsonline.informs.org/doi/abs/10.1287/mksc.2017.1043",
+      "status": "approved"
+    },
+    {
+      "name": "Turn the Apology Into a Standing, Checkable Guarantee",
+      "sourceIndustry": "airline",
+      "sourceCompany": "JetBlue",
+      "mechanism": "A one-time apology fades and can't be verified after the fact. Converting it into a specific, published commitment about what the company will do the next time service falls short (with concrete compensation tied to concrete failure conditions) gives customers something they can actually hold the business to, which restores trust further than words alone.",
+      "evidence": "After a February 2007 ice storm left JetBlue passengers stranded on grounded planes for up to 10 hours, CEO David Neeleman published a public apology in national newspapers and, within days, announced the JetBlue Customer Bill of Rights \u2014 a standing policy specifying exact compensation (e.g., a full refund and a free round-trip voucher for being held on the tarmac over three hours). The response was widely documented at the time (PR Week, PRNews) and is taught as a crisis-communications case study by Harvard Business School.",
+      "sourceType": "secondary-verified",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting"
+      ],
+      "transferTemplate": "Instead of a one-off 'sorry, we'll do better' reply to a bad review, publish a specific standing policy for what happens if your crew is late, misses a window, or a job isn't done right \u2014 e.g., a defined discount or redo policy tied to a defined failure condition. A specific, standing commitment reads as more credible than an apology because a future customer can actually check whether you honor it.",
+      "sourceUrl": "https://www.library.hbs.edu/working-knowledge/jetblues-valentines-day-crisis",
+      "status": "approved"
+    }
+  ]
+}

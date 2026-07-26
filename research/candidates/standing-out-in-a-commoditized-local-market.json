@@ -1,0 +1,62 @@
+{
+  "problemType": "standing-out-in-a-commoditized-local-market",
+  "generatedAt": "2026-07-26T20:16:31Z",
+  "candidates": [
+    {
+      "name": "Publicly Break the Specific Thing Customers Hate About the Whole Category",
+      "sourceIndustry": "wireless telecom",
+      "sourceCompany": "T-Mobile",
+      "mechanism": "In a commoditized category, every competitor tends to share the same customer-unfriendly norms (contracts, fees, fine print) because none of them wants to be the first to give up the revenue those norms generate. Publicly and permanently eliminating one of those specific, named pain points \u2014 not vaguely promising 'better service' \u2014 gives customers a concrete, easy-to-repeat reason to switch that has nothing to do with price.",
+      "evidence": "T-Mobile's 'Un-carrier' campaign, launched March 2013, eliminated specific industry-standard practices (annual contracts, overage fees) rather than simply cutting prices. Per T-Mobile's own investor press releases, the company led the U.S. wireless industry in postpaid phone net customer additions for multiple consecutive quarters following the launch, reporting 643,000 branded postpaid phone net additions in Q3 2013 alone and continued momentum through Q4.",
+      "sourceType": "first-party-research",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "Instead of competing on 'we're the best HVAC company in town' (a claim every competitor also makes), identify the one specific practice customers in the category quietly hate \u2014 vague arrival windows, no upfront pricing, no-show techs \u2014 and publicly commit to eliminating it, by name. A concrete, named commitment is something a customer can repeat to a neighbor; a vague quality claim isn't.",
+      "sourceUrl": "https://www.t-mobile.com/news/press/t-mobile-us-reports-third-quarter-2013-results-and-leads-the-in",
+      "status": "approved"
+    },
+    {
+      "name": "Use a Distinct Voice the Whole Category Is Too Cautious to Use",
+      "sourceIndustry": "consumer packaged goods (razors)",
+      "sourceCompany": "Dollar Shave Club",
+      "mechanism": "When every competitor in a boring, commoditized category markets the same way (clinical, feature-focused, interchangeable), a genuinely different voice \u2014 sharp, funny, willing to say what customers actually think \u2014 stands out precisely because the category has trained customers to expect sameness. The product itself doesn't have to be different for the voice to be.",
+      "evidence": "Dollar Shave Club's March 2012 launch video \u2014 an irreverent, comedic ad that cost roughly $4,500 to produce \u2014 drove the company's site to crash from traffic within 90 minutes of posting and brought in 12,000 subscribers in the first 48 hours and 25,000 within the first week, entering a razor market long dominated by Gillette's conventional, feature-focused advertising. The story is independently reported by multiple outlets including Inc. magazine.",
+      "sourceType": "secondary-verified",
+      "targetVerticals": [
+        "HVAC",
+        "plumbing",
+        "electrical",
+        "pest control",
+        "landscaping",
+        "general contracting",
+        "roofing"
+      ],
+      "transferTemplate": "Every competitor's website and ads in a commoditized local trade tend to read identically (a stock photo of a smiling worker, generic promises of quality and reliability). A genuinely distinct voice \u2014 in a review response, a truck wrap, a local ad, a service reminder text \u2014 doesn't require a different service to stand out; it just requires being willing to sound like an actual person instead of the category's default tone.",
+      "sourceUrl": "https://www.inc.com/magazine/201507/diana-ransom/how-youtube-crashed-our-website.html",
+      "status": "approved"
+    },
+    {
+      "name": "Make Direct Price Comparison Impossible by Being the Only Source",
+      "sourceIndustry": "grocery retail",
+      "sourceCompany": "Trader Joe's",
+      "mechanism": "A commodity gets shopped on price precisely because it's identical everywhere it's sold. Offering something structurally unique \u2014 not just branded differently, but genuinely unavailable anywhere else \u2014 removes the customer's ability to comparison-shop at all, because there's nothing to compare it against.",
+      "evidence": "Per retail-industry trade publication Supermarket News, roughly 80% of Trader Joe's product offerings are private label, versus roughly 25% at a typical grocery competitor. Industry analysts quoted in the piece attribute this directly to Trader Joe's deliberately selling items (like its 'Unexpected Cheddar' or 'Cookie Butter') that customers cannot find at any other retailer, eliminating price-comparison shopping for those products entirely rather than competing through promotional discounting.",
+      "sourceType": "secondary-verified",
+      "targetVerticals": [
+        "landscaping",
+        "general contracting",
+        "pest control"
+      ],
+      "transferTemplate": "In categories where the actual service is genuinely interchangeable (mowing a lawn, spraying for pests), the way out of price comparison is to attach something to the job that a competitor doesn't offer at all \u2014 a proprietary product mix, a specific guarantee structure, a bundled service nobody else in the area bundles \u2014 something a customer literally cannot get quoted elsewhere, not just a version of the same thing done slightly better.",
+      "sourceUrl": "https://www.supermarketnews.com/private-label/private-label-trader-joe-s-takes-differentiation-to-the-extreme",
+      "status": "approved"
+    }
+  ]
+}

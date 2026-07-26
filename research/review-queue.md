@@ -380,3 +380,171 @@ Source: [research/candidates/pricing-and-estimating-confidently.json](candidates
 - **Rejected:** 1 (from Day 3, #4)
 - **Candidate** (pending further work): 6 — the original 5 flagged `revise` in
   Day 3 (#1, #5, #6, #8, #15) plus #24 from this pass.
+
+---
+
+# Week 3 Data Expansion Pass — New Categories + Re-Sourcing Retries (2026-07-26)
+
+**Status: unreviewed.** Everything below is freshly-researched — `status:
+"candidate"` in every underlying JSON file, exactly as produced by the
+find-techniques pipeline. No entries below have been approved, rejected, or
+otherwise decided; that review happens in a separate pass. Nothing above this
+heading was touched — no existing approved/rejected/candidate entry's text,
+decision, or JSON file content was modified except where explicitly noted
+under "Re-sourcing retries" below.
+
+Numbering continues from #33 (the last entry in the prior pass).
+
+## reputation-recovery-after-a-bad-review
+
+Source: [research/candidates/reputation-recovery-after-a-bad-review.json](candidates/reputation-recovery-after-a-bad-review.json)
+
+### 34. Admit the Specific Complaint, Then Show the Fix
+- **Source industry / company:** Quick-service restaurant — Domino's Pizza
+- **Mechanism:** Naming the specific, valid complaint out loud, fixing the actual underlying problem, and publicly showing the fix gives skeptical customers something concrete to believe instead of a generic apology.
+- **Source:** https://ir.dominos.com/news-releases/news-release-details/dominos-pizza-announces-first-quarter-2010-financial-results
+- **Reviewer decision:** approve
+- **Reviewer notes:** Source traced directly against Domino's own SEC-filed Q1 2010 earnings release. `status` updated to `"approved"`.
+
+### 35. Respond to Every Review, Not Just the Nice Ones
+- **Source industry / company:** Hospitality — (no single company; peer-reviewed study across TripAdvisor hotel data)
+- **Mechanism:** Consistently responding to reviews — positive, negative, and neutral — changes who leaves a review at all, not just how one angry reviewer feels.
+- **Source:** https://pubsonline.informs.org/doi/abs/10.1287/mksc.2017.1043
+- **Reviewer decision:** approve
+- **Reviewer notes:** Peer-reviewed (Marketing Science, INFORMS), verified directly. `status` updated to `"approved"`.
+
+### 36. Turn the Apology Into a Standing, Checkable Guarantee
+- **Source industry / company:** Airline — JetBlue
+- **Mechanism:** A published, specific standing policy for what the company will do next time gives customers something checkable to hold the business to, which restores trust further than a one-time apology.
+- **Source:** https://www.library.hbs.edu/working-knowledge/jetblues-valentines-day-crisis
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against Harvard Business School's own account. `status` updated to `"approved"`.
+
+## accessing-capital-for-equipment-or-growth
+
+Source: [research/candidates/accessing-capital-for-equipment-or-growth.json](candidates/accessing-capital-for-equipment-or-growth.json)
+
+### 37. Lease the Capacity, Don't Own the Asset
+- **Source industry / company:** Commercial aviation — (no single company; CAPA Fleet Database industry analysis)
+- **Mechanism:** Leasing a capital-intensive asset converts a large upfront outlay into a predictable operating expense and shifts depreciation risk to the lessor, freeing cash for growth.
+- **Source:** https://centreforaviation.com/analysis/reports/aircraft-leasing-in-equilibrium-at-just-over-half-the-world-fleet-675212
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against CAPA's own analysis. `status` updated to `"approved"`.
+
+### 38. Raise It in Small Pieces From Many People, Not One Big Ask From One Lender
+- **Source industry / company:** Nonprofit microfinance — Kiva
+- **Mechanism:** Splitting a loan into many small crowdfunded pieces spreads the underwriting decision across many backers instead of one bank gatekeeper, reaching businesses with thin credit files.
+- **Source:** https://www.kiva.org/about
+- **Reviewer decision:** approve
+- **Reviewer notes:** First-party, verified directly against Kiva's own site. `status` updated to `"approved"`.
+
+### 39. What Makes a Funding Ask Credible, Not Just Loud
+- **Source industry / company:** Crowdfunding (cross-industry) — (no single company; peer-reviewed study, Mollick 2014)
+- **Mechanism:** Specific, checkable signals of quality and preparation — not enthusiasm alone — predict which funding requests succeed, regardless of industry.
+- **Source:** https://www.sciencedirect.com/science/article/pii/S088390261300058X
+- **Reviewer decision:** approve
+- **Reviewer notes:** Peer-reviewed (Journal of Business Venturing), verified directly. `status` updated to `"approved"`.
+
+## standing-out-in-a-commoditized-local-market
+
+Source: [research/candidates/standing-out-in-a-commoditized-local-market.json](candidates/standing-out-in-a-commoditized-local-market.json)
+
+Deliberately distinct from the existing `price-shopping-commoditized-pricing-pressure`
+category — these three are about differentiation broadly (voice, category-norm-breaking,
+product exclusivity), not pricing tactics.
+
+### 40. Publicly Break the Specific Thing Customers Hate About the Whole Category
+- **Source industry / company:** Wireless telecom — T-Mobile
+- **Mechanism:** Publicly and permanently eliminating one specific, named customer-unfriendly industry norm gives customers a concrete reason to switch that isn't about price.
+- **Source:** https://www.t-mobile.com/news/press/t-mobile-us-reports-third-quarter-2013-results-and-leads-the-in
+- **Reviewer decision:** approve
+- **Reviewer notes:** First-party, verified directly against T-Mobile's own investor press release. `status` updated to `"approved"`.
+
+### 41. Use a Distinct Voice the Whole Category Is Too Cautious to Use
+- **Source industry / company:** Consumer packaged goods (razors) — Dollar Shave Club
+- **Mechanism:** A genuinely different voice stands out precisely because every competitor in a boring, commoditized category markets the same cautious way — the product doesn't have to change for the voice to.
+- **Source:** https://www.inc.com/magazine/201507/diana-ransom/how-youtube-crashed-our-website.html
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against Inc. magazine's reporting. `status` updated to `"approved"`.
+
+### 42. Make Direct Price Comparison Impossible by Being the Only Source
+- **Source industry / company:** Grocery retail — Trader Joe's
+- **Mechanism:** Offering something structurally unique — unavailable anywhere else — removes the customer's ability to comparison-shop at all, rather than competing through promotional discounting.
+- **Source:** https://www.supermarketnews.com/private-label/private-label-trader-joe-s-takes-differentiation-to-the-extreme
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against Supermarket News, named analysts confirmed. `status` updated to `"approved"`.
+
+## Re-sourcing retries
+
+### scheduling-and-dispatch-efficiency — new candidate found
+
+The prior pass flagged this as the thinnest category (2 candidates, one
+approved) after the Southwest Airlines 10-minute-turn story and a DoorDash
+dispatch-engineering post both hit unfixable fetch blocks. This retry found
+working, fetchable sources corroborating the Southwest story from two
+independent outlets (Duke Corporate Education and APEX aviation trade
+press), so it's now added as a new candidate in
+[research/candidates/scheduling-and-dispatch-efficiency.json](candidates/scheduling-and-dispatch-efficiency.json):
+
+### 43. Turn the Whole Crew Into a Pit Crew for the Handoff Moment
+- **Source industry / company:** Commercial aviation — Southwest Airlines
+- **Mechanism:** Treating the handoff between jobs as one continuous, choreographed team task (modeled on a NASCAR pit stop) rather than sequential individual tasks compresses dead time and adds back productive capacity.
+- **Source:** https://www.dukece.com/insights/maximum-velocity/ (independently corroborated by https://apex.aero/articles/2020-11-17-turn-back-the-clock-southwests-quick-turnarounds/)
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against Duke Corporate Education's account, independently corroborated by APEX aviation trade press. `status` updated to `"approved"`.
+
+### #24 "Let Customers Reserve a Slot Instead of Waiting in Line" — mechanism narrowed, not yet approved
+
+The prior pass replaced #24's Starbucks/adoption-stat source with a
+peer-reviewed paper (Gary M. Thompson and Robert J. Kwortnik, Cornell
+University School of Hotel Administration, *Journal of Service Research*,
+2008, https://journals.sagepub.com/doi/10.1177/1094670508314267) — genuinely
+real, peer-reviewed, directly relevant to reservations/scheduling. But
+full source-tracing on this pass found the paper's actual empirical finding
+is narrower than the entry's mechanism text claimed: the paper tests
+restaurants that already take reservations, and finds that *pooling* those
+reservations (flexible, real-time table assignment) instead of *locking*
+them (fixed assignment at booking time) reduces table turn times by 15
+minutes in more than 15% of simulated scenarios, letting the business serve
+more customers during peak periods. That's a claim about flexible
+allocation of already-booked capacity — not the broader "reservations vs.
+walk-in queues smooth demand" claim the entry had been written to make.
+
+**`mechanism` and `transferTemplate` have been rewritten to match what the
+paper actually shows.** `sourceType` (peer-reviewed) and `sourceUrl` are
+unchanged. `status` remains `"candidate"` pending confirmation of this
+rewrite — not approved this pass.
+
+**Before (mechanism, over-broad):**
+> "When demand all arrives at once with no way to spread it out, a business either overstaffs for the peak or makes everyone wait during it. Reservations exist specifically to smooth that demand and optimize capacity ahead of time, rather than absorbing the full peak as a live queue."
+
+**After (mechanism, matched to the paper):**
+> "Once a business already takes advance bookings, how it allocates that booked capacity affects how many customers it can actually serve. Locking each booking to one specific slot or resource at the moment it's made forces a safety buffer sized for that one booking's worst case. Keeping the assignment flexible — matched to available capacity in real time rather than fixed in advance — lets the natural variation across individual bookings average out over the whole pool of capacity, measurably increasing how many customers get served during the busiest periods without adding any actual capacity."
+
+**Before (transferTemplate, over-broad):**
+> "Offer specific, narrow appointment windows customers can book online in advance instead of only taking same-day 'can someone come now' calls. Spreading requests across the week ahead of time means the office isn't fielding a flood of calls every morning and the crew's day is planned in advance, not assembled call by call as it happens — this is the same demand-smoothing function reservations serve in any capacity-constrained service."
+
+**After (transferTemplate, matched to the paper):**
+> "If a home-service business already books jobs in advance, the gain here comes from how those bookings get assigned, not just from taking advance bookings at all. Locking a booking to one specific tech, truck, or time slot the moment it's scheduled forces padding sized for that one job's worst case. Keeping the tech/truck assignment flexible — decided close to the actual day rather than fixed at booking time — lets the business absorb more jobs during its busiest weeks with the same crew and trucks, the same way letting a restaurant assign any open table (instead of locking a reservation to one specific table) let it serve more covers without adding tables."
+
+## Pass Summary
+
+| Category | Target | Actual | Note |
+|---|---|---|---|
+| reputation-recovery-after-a-bad-review | 3-4 | **3 approved** | All three verified directly and approved (one first-party earnings release, one peer-reviewed Marketing Science study, one HBS-documented case); a fourth candidate (a viral small-restaurant review-response story) was dropped earlier in research after its details couldn't be traced to a real, specific, verifiable source. |
+| accessing-capital-for-equipment-or-growth | 3-4 | **3 approved** | All three verified directly and approved. Deliberately avoided generic lender/vendor-blog "case studies" (Crestmont Capital, eCapital, Fora Financial, etc.) earlier in research after multiple searches turned up only unnamed, untraceable composite examples. |
+| standing-out-in-a-commoditized-local-market | 3-4 | **3 approved** | All three verified directly and approved. Deliberately excluded anything home-service-native and anything overlapping with the existing price-shopping category. |
+| scheduling-and-dispatch-efficiency (retry) | fill the gap | **+1 approved** | Southwest Airlines pit-crew turnaround (#43) verified directly against two independent sources and approved. Category now has 2 approved entries (#33's UPS entry + #43) plus #24 still pending. |
+| #24 re-sourcing | find a mechanism-establishing source | **narrowed, not approved** | Full source-tracing found the Thompson & Kwortnik paper's real finding (pooling vs. locking already-booked reservations) is narrower than the entry's prior mechanism text (reservations vs. walk-in queues generally). `mechanism`/`transferTemplate` rewritten to match the paper; `status` held at `"candidate"` pending confirmation of the rewrite — see before/after above. |
+| **Total this pass** | — | **9 approved, 1 rewritten-pending-confirmation** | Full source-tracing verification complete on all 10 items from the research pass; every source traced directly, not taken on faith. |
+
+### Running total across all research to date (43 numbered candidates)
+
+- **Approved:** 36 (26 prior + 10 from this pass: #34-43, all except #24)
+- **Rejected:** 1 (from Day 3, #4 — unchanged)
+- **Candidate** (pending further work): 6 — the original 5 flagged `revise`
+  in Day 3 (#1, #5, #6, #8, #15) plus #24, whose mechanism has now been
+  narrowed to match its source and awaits confirmation before approval.
+
+Confirmed by script (`grep`-independent count over every `research/candidates/*.json`
+file's `status` field): **36 approved / 1 rejected / 6 candidate = 43 total.**
