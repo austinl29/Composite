@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { SourceType } from "@/types/technique";
+import { SOURCE_TYPE_LABELS } from "@/lib/sourceTypeLabels";
 import MatchDeepDive from "./MatchDeepDive";
 
 interface Match {
@@ -29,27 +30,39 @@ const LOADING_MESSAGES = [
   "Almost there…",
 ];
 
-const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
-  "peer-reviewed": "Peer-reviewed research",
-  "first-party-research": "First-party research",
-  "secondary-verified": "Independently verified",
-  "vendor-benchmark": "Vendor's own data",
-  "promotional-testimonial": "Single case study",
+const CONFIDENCE_META: Record<
+  Match["confidence"],
+  { label: string; dot: string; text: string }
+> = {
+  strong: { label: "Strong fit", dot: "bg-ink-text", text: "text-ink-text" },
+  moderate: { label: "Moderate fit", dot: "bg-ink-muted", text: "text-ink-muted" },
+  weak: { label: "Weak fit", dot: "bg-ink-border", text: "text-ink-muted/70" },
 };
 
-const CONFIDENCE_STYLES: Record<Match["confidence"], string> = {
-  strong:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  moderate:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  weak: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-};
+function ConfidenceBadge({ confidence }: { confidence: Match["confidence"] }) {
+  const meta = CONFIDENCE_META[confidence];
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1.5">
+      <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+      <span
+        className={`font-eyebrow text-[10px] uppercase tracking-widest ${meta.text}`}
+      >
+        {meta.label}
+      </span>
+    </span>
+  );
+}
 
-const CONFIDENCE_LABELS: Record<Match["confidence"], string> = {
-  strong: "Strong fit",
-  moderate: "Moderate fit",
-  weak: "Weak fit",
-};
+function SourceStamp({ sourceType }: { sourceType: SourceType }) {
+  return (
+    <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-ink-gold-dim/60 px-2.5 py-1">
+      <span className="h-1.5 w-1.5 rounded-full bg-ink-gold" />
+      <span className="font-eyebrow text-[10px] uppercase tracking-widest text-ink-gold">
+        {SOURCE_TYPE_LABELS[sourceType]}
+      </span>
+    </span>
+  );
+}
 
 export default function DiagnoseForm({
   sourceTypeById,
@@ -114,7 +127,7 @@ export default function DiagnoseForm({
   const contextOverLimit = businessContext.length > CONTEXT_MAX_LENGTH;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <textarea
           value={problem}
@@ -122,14 +135,12 @@ export default function DiagnoseForm({
           placeholder="e.g. I quote a lot of jobs but people go quiet after and never book. Or: our summers are slammed and winters are dead, and cash flow swings hard."
           rows={4}
           disabled={loading}
-          className="w-full rounded-md border border-zinc-300 bg-white p-3 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+          className="w-full rounded-lg border border-ink-border bg-ink-surface p-3 text-sm text-ink-text placeholder-ink-muted/60 outline-none transition focus:border-ink-text/40 disabled:opacity-60"
         />
         <div className="flex items-center justify-between gap-3">
           <span
-            className={`text-xs ${
-              overLimit
-                ? "text-red-600 dark:text-red-400"
-                : "text-zinc-400 dark:text-zinc-600"
+            className={`font-eyebrow text-xs ${
+              overLimit ? "text-red-400" : "text-ink-muted"
             }`}
           >
             {problem.length}/{MAX_LENGTH}
@@ -137,30 +148,28 @@ export default function DiagnoseForm({
           <button
             type="submit"
             disabled={loading || !problem.trim() || overLimit || contextOverLimit}
-            className="shrink-0 rounded-md bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-zinc-50 dark:text-black"
+            className="shrink-0 rounded-md bg-ink-text px-4 py-2 text-sm font-medium text-ink-bg transition disabled:opacity-40"
           >
             {loading ? "Checking…" : "Check against database"}
           </button>
         </div>
 
-        <div className="rounded-md border border-zinc-200 dark:border-zinc-800">
+        <div className="rounded-lg border border-ink-border">
           <button
             type="button"
             onClick={() => setShowContext((s) => !s)}
-            className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-zinc-600 dark:text-zinc-400"
+            className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-ink-muted"
           >
             <span>
               Tell us about your business{" "}
-              <span className="text-zinc-400 dark:text-zinc-600">(optional)</span>
+              <span className="text-ink-muted/60">(optional)</span>
             </span>
-            <span className="text-zinc-400 dark:text-zinc-600">
-              {showContext ? "−" : "+"}
-            </span>
+            <span className="text-ink-muted/60">{showContext ? "−" : "+"}</span>
           </button>
 
           {showContext && (
-            <div className="flex flex-col gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800">
-              <p className="text-xs text-zinc-500 dark:text-zinc-500">
+            <div className="flex flex-col gap-2 border-t border-ink-border p-3">
+              <p className="text-xs text-ink-muted">
                 Anything about your business helps us reason concretely instead of
                 staying generic — numbers, tools, how you currently do things,
                 whatever seems relevant.
@@ -171,13 +180,11 @@ export default function DiagnoseForm({
                 placeholder="e.g. Average ticket ~$225, crew of 3, mostly repeat customers, we run a Xero window washing tank on the truck and book jobs through a shared calendar."
                 rows={3}
                 disabled={loading}
-                className="w-full rounded-md border border-zinc-300 bg-white p-3 text-sm text-black disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
+                className="w-full rounded-lg border border-ink-border bg-ink-surface p-3 text-sm text-ink-text placeholder-ink-muted/60 outline-none transition focus:border-ink-text/40 disabled:opacity-60"
               />
               <span
-                className={`self-end text-xs ${
-                  contextOverLimit
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-zinc-400 dark:text-zinc-600"
+                className={`self-end font-eyebrow text-xs ${
+                  contextOverLimit ? "text-red-400" : "text-ink-muted"
                 }`}
               >
                 {businessContext.length}/{CONTEXT_MAX_LENGTH}
@@ -188,40 +195,38 @@ export default function DiagnoseForm({
       </form>
 
       {loading && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-zinc-200 py-10 text-center dark:border-zinc-800">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-700 dark:border-t-zinc-300" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-ink-border py-10 text-center">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-border border-t-ink-muted" />
+          <p className="text-sm text-ink-muted">
             {LOADING_MESSAGES[loadingMessageIndex]}
           </p>
-          <p className="text-xs text-zinc-400 dark:text-zinc-600">
+          <p className="text-xs text-ink-muted/60">
             This takes 20–30 seconds — we&apos;re actually reasoning through
             it, not just keyword matching.
           </p>
         </div>
       )}
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-400">{error}</p>}
 
       {!loading && result && (
-        <div className="flex flex-col gap-4">
-          <p className="rounded-md bg-zinc-50 p-3 text-xs text-zinc-500 dark:bg-zinc-900 dark:text-zinc-500">
+        <div className="flex flex-col gap-6">
+          <blockquote className="border-l-2 border-ink-border pl-3 text-xs italic leading-5 text-ink-muted">
             You described: &ldquo;{submittedProblemRef.current}&rdquo;
-          </p>
+          </blockquote>
 
           {result.matches.length === 0 ? (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <div className="rounded-xl border border-ink-border bg-ink-surface p-6">
+              <p className="font-display text-lg font-medium text-ink-text">
                 Nothing in our current database is a strong fit for this.
               </p>
-              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              <p className="mt-2 text-sm leading-6 text-ink-muted">
                 {result.assessment}
               </p>
             </div>
           ) : (
             <>
-              <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm leading-6 text-ink-muted">
                 {result.assessment}
               </p>
               <ul className="flex flex-col gap-4">
@@ -230,29 +235,21 @@ export default function DiagnoseForm({
                   return (
                     <li
                       key={m.techniqueId}
-                      className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+                      className="rounded-xl border border-ink-border bg-ink-surface p-5"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
                         <Link
                           href={`/techniques/${m.techniqueId}`}
-                          className="font-medium text-black hover:underline dark:text-zinc-50"
+                          className="font-display text-lg font-medium leading-snug text-ink-text transition hover:text-white"
                         >
                           {m.techniqueName}
                         </Link>
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${CONFIDENCE_STYLES[m.confidence]}`}
-                        >
-                          {CONFIDENCE_LABELS[m.confidence]}
-                        </span>
+                        <ConfidenceBadge confidence={m.confidence} />
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                      <p className="mt-3 text-sm leading-6 text-ink-muted">
                         {m.explanation}
                       </p>
-                      {sourceType && (
-                        <p className="mt-3 text-[11px] text-zinc-400 dark:text-zinc-600">
-                          Source: {SOURCE_TYPE_LABELS[sourceType]}
-                        </p>
-                      )}
+                      {sourceType && <SourceStamp sourceType={sourceType} />}
                       <MatchDeepDive
                         techniqueId={m.techniqueId}
                         techniqueName={m.techniqueName}

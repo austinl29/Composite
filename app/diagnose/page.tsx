@@ -11,25 +11,27 @@ export default async function DiagnosePage() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-12">
-      <Link
-        href="/"
-        className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300"
-      >
-        ← Back to all techniques
-      </Link>
+    <div className="min-h-full bg-ink-bg font-editorial text-ink-text">
+      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-8 px-4 py-10 sm:px-6 sm:py-16">
+        <Link
+          href="/"
+          className="w-fit font-eyebrow text-xs uppercase tracking-widest text-ink-muted transition hover:text-ink-text"
+        >
+          ← Back to all techniques
+        </Link>
 
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Diagnose
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Describe a problem in your business. We&apos;ll check it against the
-          techniques in the database.
-        </p>
-      </header>
+        <header className="flex flex-col gap-2">
+          <h1 className="font-display text-3xl font-medium tracking-tight text-ink-text sm:text-4xl">
+            Diagnose
+          </h1>
+          <p className="max-w-prose text-sm leading-6 text-ink-muted">
+            Describe a problem in your business. We&apos;ll check it against the
+            techniques in the database.
+          </p>
+        </header>
 
-      <DiagnoseForm sourceTypeById={sourceTypeById} />
+        <DiagnoseForm sourceTypeById={sourceTypeById} />
+      </div>
     </div>
   );
 }

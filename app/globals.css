@@ -24,3 +24,34 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Diagnose flow editorial design system (2026-07-26 restyle, mockup-
+   approved). Additive only — doesn't touch --background/--foreground or
+   the default font-sans/font-mono tokens above, so browse/technique-detail
+   pages are unaffected. Scoped to /diagnose via these utility classes:
+   font-display (Fraunces), font-editorial (Inter), font-eyebrow
+   (JetBrains Mono), and the ink-* / gold-* / indigo-* color tokens. */
+@theme inline {
+  --font-display: var(--font-fraunces);
+  --font-editorial: var(--font-inter);
+  --font-eyebrow: var(--font-jetbrains-mono);
+}
+
+@theme {
+  --color-ink-bg: #0a0b0d;
+  --color-ink-surface: #131417;
+  --color-ink-border: #24262b;
+  --color-ink-text: #ededed;
+  --color-ink-muted: #8b92a0;
+  --color-ink-gold: #c9a961;
+  --color-ink-gold-dim: #8a7645;
+  --color-ink-indigo-start: #6366f1;
+  --color-ink-indigo-end: #8b5cf6;
+  /* Lighter tints of the same indigo/violet hues, for small text only (the
+     "COMPOSITE INSIGHT" gradient eyebrow). The saturated start/end pair
+     above reads fine as a card border/large fill, but at 12px text size it
+     measures ~4.1-4.35:1 contrast against ink-surface — under the 4.5:1 AA
+     minimum for normal text. These measure ~9.2-10:1. */
+  --color-ink-indigo-text-start: #a5b4fc;
+  --color-ink-indigo-text-end: #c4b5fd;
+}
