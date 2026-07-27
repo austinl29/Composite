@@ -19,8 +19,21 @@ interface DiagnoseResult {
   assessment: string;
 }
 
+interface TechniqueMeta {
+  sourceType: SourceType;
+  sourceIndustry: string;
+  sourceCompany: string | null;
+  index: number;
+}
+
 const MAX_LENGTH = 4000;
 const CONTEXT_MAX_LENGTH = 2000;
+
+// buildLoadingMessages always returns exactly this many items — kept as a
+// true module-level constant (rather than reading LOADING_MESSAGES.length,
+// which is now a per-render local since it depends on techniqueCount) so
+// the loading-message useEffect below has a stable dependency.
+const LOADING_MESSAGE_COUNT = 5;
 
 function buildLoadingMessages(techniqueCount: number): string[] {
   return [
@@ -32,45 +45,36 @@ function buildLoadingMessages(techniqueCount: number): string[] {
   ];
 }
 
-const CONFIDENCE_META: Record<
-  Match["confidence"],
-  { label: string; dot: string; text: string }
-> = {
-  strong: { label: "Strong fit", dot: "bg-ink-text", text: "text-ink-text" },
-  moderate: { label: "Moderate fit", dot: "bg-ink-muted", text: "text-ink-muted" },
-  weak: { label: "Weak fit", dot: "bg-ink-border", text: "text-ink-muted/70" },
+const CONFIDENCE_LABEL: Record<Match["confidence"], string> = {
+  strong: "strong confidence",
+  moderate: "moderate confidence",
+  weak: "weak confidence",
 };
 
-function ConfidenceBadge({ confidence }: { confidence: Match["confidence"] }) {
-  const meta = CONFIDENCE_META[confidence];
-  return (
-    <span className="inline-flex shrink-0 items-center gap-1.5">
-      <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
-      <span
-        className={`font-eyebrow text-[10px] uppercase tracking-widest ${meta.text}`}
-      >
-        {meta.label}
-      </span>
-    </span>
-  );
-}
+const textareaClasses =
+  "w-full rounded-[3px] border border-ink-gold/30 bg-transparent p-[18px] text-[15px] leading-[1.6] text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
 
-function SourceStamp({ sourceType }: { sourceType: SourceType }) {
+const primaryButtonClasses =
+  "rounded-[3px] bg-ink-gold px-8 py-4 font-eyebrow text-xs font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:-translate-y-px hover:bg-ink-gold-hover hover:shadow-[0_12px_28px_rgba(201,169,97,0.25)] disabled:translate-y-0 disabled:opacity-40 disabled:shadow-none";
+
+function PlusMinusIcon({ open }: { open: boolean }) {
   return (
-    <span className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-ink-gold-dim/60 px-2.5 py-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-ink-gold" />
-      <span className="font-eyebrow text-[10px] uppercase tracking-widest text-ink-gold">
-        {SOURCE_TYPE_LABELS[sourceType]}
-      </span>
+    <span className="relative block h-4 w-4 shrink-0">
+      <span className="absolute left-0 top-1/2 h-[1.5px] w-4 -translate-y-1/2 bg-ink-gold-dim" />
+      <span
+        className={`absolute left-1/2 top-0 h-4 w-[1.5px] -translate-x-1/2 bg-ink-gold-dim transition-transform ${
+          open ? "scale-y-0" : "scale-y-100"
+        }`}
+      />
     </span>
   );
 }
 
 export default function DiagnoseForm({
-  sourceTypeById,
+  techniqueMetaById,
   techniqueCount,
 }: {
-  sourceTypeById: Record<string, SourceType>;
+  techniqueMetaById: Record<string, TechniqueMeta>;
   techniqueCount: number;
 }) {
   const LOADING_MESSAGES = buildLoadingMessages(techniqueCount);
@@ -88,7 +92,7 @@ export default function DiagnoseForm({
       return;
     }
     const interval = setInterval(() => {
-      setLoadingMessageIndex((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
+      setLoadingMessageIndex((i) => Math.min(i + 1, LOADING_MESSAGE_COUNT - 1));
     }, 4000);
     return () => clearInterval(interval);
   }, [loading]);
@@ -132,80 +136,85 @@ export default function DiagnoseForm({
   const contextOverLimit = businessContext.length > CONTEXT_MAX_LENGTH;
 
   return (
-    <div className="flex flex-col gap-8">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <div className="flex flex-col gap-10">
+      <form onSubmit={handleSubmit} className="flex flex-col">
+        <p className="mb-2.5 font-eyebrow text-[11px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
+          The problem
+        </p>
         <textarea
           value={problem}
           onChange={(e) => setProblem(e.target.value)}
-          placeholder="e.g. I quote a lot of jobs but people go quiet after and never book. Or: our summers are slammed and winters are dead, and cash flow swings hard."
-          rows={4}
+          placeholder="e.g. Summer we're slammed, can't keep enough techs, then Nov–Feb we're basically bleeding money just to keep the doors open."
+          rows={5}
           disabled={loading}
-          className="w-full rounded-lg border border-ink-border bg-ink-surface p-3 text-sm text-ink-text placeholder-ink-muted/60 outline-none transition focus:border-ink-text/40 disabled:opacity-60"
+          className={textareaClasses}
         />
-        <div className="flex items-center justify-between gap-3">
+        <div className="mb-10 mt-2 flex justify-end">
           <span
-            className={`font-eyebrow text-xs ${
-              overLimit ? "text-red-400" : "text-ink-muted"
+            className={`font-eyebrow text-[11px] ${
+              overLimit ? "text-red-400" : "text-ink-muted-dim"
             }`}
           >
-            {problem.length}/{MAX_LENGTH}
+            {problem.length} / {MAX_LENGTH}
           </span>
-          <button
-            type="submit"
-            disabled={loading || !problem.trim() || overLimit || contextOverLimit}
-            className="shrink-0 rounded-md bg-ink-text px-4 py-2 text-sm font-medium text-ink-bg transition disabled:opacity-40"
-          >
-            {loading ? "Checking…" : "Check against database"}
-          </button>
         </div>
 
-        <div className="rounded-lg border border-ink-border">
+        <div className="mb-11 border-t border-ink-gold/15 pt-7">
           <button
             type="button"
             onClick={() => setShowContext((s) => !s)}
-            className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-ink-muted"
+            className="flex w-full items-center justify-between text-left"
           >
-            <span>
+            <span className="text-[13.5px] font-medium text-ink-text/90">
               Tell us about your business{" "}
-              <span className="text-ink-muted/60">(optional)</span>
+              <span className="text-ink-muted-dim">(optional)</span>
             </span>
-            <span className="text-ink-muted/60">{showContext ? "−" : "+"}</span>
+            <PlusMinusIcon open={showContext} />
           </button>
 
           {showContext && (
-            <div className="flex flex-col gap-2 border-t border-ink-border p-3">
-              <p className="text-xs text-ink-muted">
-                Anything about your business helps us reason concretely instead of
-                staying generic — numbers, tools, how you currently do things,
-                whatever seems relevant.
+            <div className="mt-3.5 flex flex-col gap-3.5">
+              <p className="text-[13px] leading-[1.6] text-ink-muted-soft">
+                Ticket size, crew size, how you get leads — anything that would
+                sharpen the read.
               </p>
               <textarea
                 value={businessContext}
                 onChange={(e) => setBusinessContext(e.target.value)}
-                placeholder="e.g. Average ticket ~$225, crew of 3, mostly repeat customers, we run a Xero window washing tank on the truck and book jobs through a shared calendar."
+                placeholder="Optional context…"
                 rows={3}
                 disabled={loading}
-                className="w-full rounded-lg border border-ink-border bg-ink-surface p-3 text-sm text-ink-text placeholder-ink-muted/60 outline-none transition focus:border-ink-text/40 disabled:opacity-60"
+                className={`${textareaClasses} border-ink-gold/20 text-sm`}
               />
               <span
-                className={`self-end font-eyebrow text-xs ${
-                  contextOverLimit ? "text-red-400" : "text-ink-muted"
+                className={`self-end font-eyebrow text-[11px] ${
+                  contextOverLimit ? "text-red-400" : "text-ink-muted-dim"
                 }`}
               >
-                {businessContext.length}/{CONTEXT_MAX_LENGTH}
+                {businessContext.length} / {CONTEXT_MAX_LENGTH}
               </span>
             </div>
           )}
         </div>
+
+        <div className="text-right">
+          <button
+            type="submit"
+            disabled={loading || !problem.trim() || overLimit || contextOverLimit}
+            className={primaryButtonClasses}
+          >
+            {loading ? "Checking…" : "Check against database →"}
+          </button>
+        </div>
       </form>
 
       {loading && (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-ink-border py-10 text-center">
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-border border-t-ink-muted" />
+        <div className="flex flex-col items-center gap-3 rounded-[3px] border border-ink-gold/20 py-10 text-center">
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-gold/25 border-t-ink-gold" />
           <p className="text-sm text-ink-muted">
             {LOADING_MESSAGES[loadingMessageIndex]}
           </p>
-          <p className="text-xs text-ink-muted/60">
+          <p className="text-xs text-ink-muted-dim">
             This takes 20–30 seconds — we&apos;re actually reasoning through
             it, not just keyword matching.
           </p>
@@ -215,52 +224,69 @@ export default function DiagnoseForm({
       {error && <p className="text-sm text-red-400">{error}</p>}
 
       {!loading && result && (
-        <div className="flex flex-col gap-6">
-          <blockquote className="border-l-2 border-ink-border pl-3 text-xs italic leading-5 text-ink-muted">
+        <div className="flex flex-col gap-8">
+          <blockquote className="border-l-2 border-ink-gold/20 pl-3 text-xs italic leading-5 text-ink-muted">
             You described: &ldquo;{submittedProblemRef.current}&rdquo;
           </blockquote>
 
           {result.matches.length === 0 ? (
-            <div className="rounded-xl border border-ink-border bg-ink-surface p-6">
-              <p className="font-display text-lg font-medium text-ink-text">
+            <div className="rounded-[3px] border border-ink-gold/20 bg-ink-surface p-7">
+              <p className="font-display text-lg font-medium text-ink-heading">
                 Nothing in our current database is a strong fit for this.
               </p>
-              <p className="mt-2 text-sm leading-6 text-ink-muted">
+              <p className="mt-2.5 text-sm leading-6 text-ink-muted">
                 {result.assessment}
               </p>
             </div>
           ) : (
             <>
-              <p className="text-sm leading-6 text-ink-muted">
-                {result.assessment}
-              </p>
-              <ul className="flex flex-col gap-4">
+              <p className="text-sm leading-6 text-ink-muted">{result.assessment}</p>
+              <ul className="flex flex-col gap-8">
                 {result.matches.map((m) => {
-                  const sourceType = sourceTypeById[m.techniqueId];
+                  const meta = techniqueMetaById[m.techniqueId];
                   return (
                     <li
                       key={m.techniqueId}
-                      className="rounded-xl border border-ink-border bg-ink-surface p-5"
+                      className="relative rounded-[3px] border border-ink-gold/20 bg-ink-surface p-8 sm:p-10"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <Link
-                          href={`/techniques/${m.techniqueId}`}
-                          className="font-display text-lg font-medium leading-snug text-ink-text transition hover:text-white"
-                        >
-                          {m.techniqueName}
-                        </Link>
-                        <ConfidenceBadge confidence={m.confidence} />
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-ink-muted">
+                      {meta && (
+                        <span className="absolute right-6 top-6 font-eyebrow text-[10px] tracking-[0.08em] text-ink-gold-dim">
+                          № {String(meta.index).padStart(2, "0")} / {techniqueCount}
+                        </span>
+                      )}
+
+                      <p className="mb-2.5 font-eyebrow text-[11px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
+                        Matched technique · {CONFIDENCE_LABEL[m.confidence]}
+                      </p>
+                      <Link
+                        href={`/techniques/${m.techniqueId}`}
+                        className="block font-display text-[22px] font-medium leading-[1.3] text-ink-heading transition hover:text-ink-gold"
+                      >
+                        {m.techniqueName}
+                      </Link>
+                      {meta && (
+                        <p className="mb-4 mt-1.5 text-sm italic text-ink-muted-soft">
+                          {meta.sourceIndustry}
+                          {meta.sourceCompany ? ` — ${meta.sourceCompany}` : ""}
+                        </p>
+                      )}
+                      <p className="text-[15.5px] leading-[1.7] text-ink-muted">
                         {m.explanation}
                       </p>
-                      {sourceType && <SourceStamp sourceType={sourceType} />}
+
+                      {meta && (
+                        <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-[3px] border border-ink-gold-dim px-3 py-1.5 font-eyebrow text-[11px] tracking-[0.06em] text-ink-gold">
+                          <span className="h-1.5 w-1.5 rounded-full bg-ink-gold" />
+                          {SOURCE_TYPE_LABELS[meta.sourceType]}
+                        </span>
+                      )}
+
                       <MatchDeepDive
                         techniqueId={m.techniqueId}
                         techniqueName={m.techniqueName}
                         confidence={m.confidence}
                         explanation={m.explanation}
-                        sourceType={sourceType}
+                        sourceType={meta?.sourceType}
                         problem={submittedProblemRef.current}
                         businessContext={submittedContextRef.current}
                       />

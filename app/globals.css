@@ -25,12 +25,14 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Diagnose flow editorial design system (2026-07-26 restyle, mockup-
-   approved). Additive only — doesn't touch --background/--foreground or
-   the default font-sans/font-mono tokens above, so browse/technique-detail
-   pages are unaffected. Scoped to /diagnose via these utility classes:
+/* Editorial ledger design system (2026-07-27 redesign, "warm gold-and-ink"
+   handoff — extends the 2026-07-26 restyle's cooler dark-neutral palette
+   into a warmer one). Additive only — doesn't touch --background/
+   --foreground or the default font-sans/font-mono tokens above, so the
+   technique-detail page is unaffected. Scoped via these utility classes:
    font-display (Fraunces), font-editorial (Inter), font-eyebrow
-   (JetBrains Mono), and the ink-* / gold-* / indigo-* color tokens. */
+   (JetBrains Mono), and the ink-* / indigo-* color tokens. Now used by
+   the home page, /diagnose, and MatchDeepDive. */
 @theme inline {
   --font-display: var(--font-fraunces);
   --font-editorial: var(--font-inter);
@@ -38,20 +40,30 @@ body {
 }
 
 @theme {
-  --color-ink-bg: #0a0b0d;
-  --color-ink-surface: #131417;
-  --color-ink-border: #24262b;
-  --color-ink-text: #ededed;
-  --color-ink-muted: #8b92a0;
+  --color-ink-bg: #0a0908;
+  --color-ink-surface: #0f0d0a;
+  --color-ink-border: #2a251c;
+  --color-ink-text: #edeae3;
+  --color-ink-heading: #f3f0e9;
+  --color-ink-heading-hero: #f5f1e7;
+  --color-ink-muted: #9a9284;
+  --color-ink-muted-dim: #6b6459;
+  --color-ink-muted-soft: #8f8778;
   --color-ink-gold: #c9a961;
   --color-ink-gold-dim: #8a7645;
+  --color-ink-gold-hover: #ddbe79;
   --color-ink-indigo-start: #6366f1;
   --color-ink-indigo-end: #8b5cf6;
-  /* Lighter tints of the same indigo/violet hues, for small text only (the
-     "COMPOSITE INSIGHT" gradient eyebrow). The saturated start/end pair
-     above reads fine as a card border/large fill, but at 12px text size it
-     measures ~4.1-4.35:1 contrast against ink-surface — under the 4.5:1 AA
-     minimum for normal text. These measure ~9.2-10:1. */
+  /* Lighter tints of the same indigo/violet hues, for small text only.
+     Kept for any future gradient-text use — the redesigned Composite
+     Insight label (below) uses a solid light lavender instead of gradient
+     text, which sidesteps the contrast problem this was built to fix
+     (measured ~4.1-4.35:1 at 12px against ink-surface, under the 4.5:1 AA
+     minimum for normal text). These measure ~9.2-10:1 if gradient text is
+     used again anywhere. */
   --color-ink-indigo-text-start: #a5b4fc;
   --color-ink-indigo-text-end: #c4b5fd;
+  --color-ink-lavender: #efe9fb;
+  --color-ink-violet-label: #9c97e0;
+  --color-ink-violet-body: #a39cd8;
 }

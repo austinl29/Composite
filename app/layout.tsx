@@ -12,11 +12,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Diagnose flow's editorial type system (2026-07-26 restyle) — self-hosted
-// via next/font to avoid a Google Fonts <link> layout shift. Scoped to the
-// /diagnose route only via the font-display/font-editorial/font-eyebrow
-// utility tokens in globals.css; browse/technique-detail pages are
-// untouched since they don't reference those classes.
+// Editorial type system (2026-07-26 restyle, extended 2026-07-27 to the
+// home page too) — self-hosted via next/font to avoid a Google Fonts
+// <link> layout shift. Scoped via the font-display/font-editorial/
+// font-eyebrow utility tokens in globals.css; the technique-detail page is
+// untouched since it doesn't reference those classes.
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],

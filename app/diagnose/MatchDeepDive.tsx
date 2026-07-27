@@ -33,11 +33,14 @@ interface SynthesizeResult {
 type Stage = "idle" | "loading-questions" | "questions" | "loading-synthesis" | "result";
 type LeadStage = "idle" | "submitting" | "submitted";
 
-const fieldClasses =
-  "w-full rounded-lg border border-ink-border bg-ink-surface px-3 py-1.5 text-sm text-ink-text placeholder-ink-muted/60 outline-none transition focus:border-ink-text/40 disabled:opacity-60";
+const underlineFieldClasses =
+  "w-full border-b border-ink-gold/35 bg-transparent px-0.5 py-2.5 text-sm text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
+
+const boxedFieldClasses =
+  "w-full rounded-[3px] border border-ink-gold/30 bg-transparent px-3 py-2 text-sm text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
 
 const primaryButtonClasses =
-  "self-start rounded-md bg-ink-text px-4 py-2 text-sm font-medium text-ink-bg transition disabled:opacity-40";
+  "self-start rounded-[2px] bg-ink-gold px-6 py-3.5 font-eyebrow text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:bg-ink-gold-hover disabled:opacity-40";
 
 export default function MatchDeepDive({
   techniqueId,
@@ -175,12 +178,12 @@ export default function MatchDeepDive({
 
   if (stage === "idle") {
     return (
-      <div className="mt-4">
+      <div className="mt-5">
         {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
         <button
           type="button"
           onClick={startDeepDive}
-          className="rounded-md border border-ink-border px-3 py-1.5 text-sm font-medium text-ink-text transition hover:border-ink-text/40"
+          className="rounded-[3px] border border-ink-gold-dim px-3.5 py-2 font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-gold transition hover:bg-ink-gold/10"
         >
           Get a personalized plan →
         </button>
@@ -190,8 +193,8 @@ export default function MatchDeepDive({
 
   if (stage === "loading-questions" || stage === "loading-synthesis") {
     return (
-      <div className="mt-4 flex flex-col items-center gap-2 rounded-lg border border-ink-border py-6 text-center">
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-border border-t-ink-muted" />
+      <div className="mt-5 flex flex-col items-center gap-2 rounded-[3px] border border-ink-gold/20 py-6 text-center">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-gold/25 border-t-ink-gold" />
         <p className="text-xs text-ink-muted">
           {stage === "loading-questions"
             ? "Coming up with a few questions specific to this technique…"
@@ -205,9 +208,9 @@ export default function MatchDeepDive({
     return (
       <form
         onSubmit={submitAnswers}
-        className="mt-4 flex flex-col gap-4 rounded-lg border border-ink-border p-4"
+        className="mt-5 flex flex-col gap-4 rounded-[3px] border border-ink-gold/20 p-5"
       >
-        <p className="text-xs text-ink-muted">
+        <p className="text-xs text-ink-muted-soft">
           A few quick questions to tailor this to your business:
         </p>
         {questions.map((q) => (
@@ -220,10 +223,10 @@ export default function MatchDeepDive({
                     key={opt}
                     type="button"
                     onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`rounded-full border px-3 py-1 text-xs transition ${
+                    className={`rounded-[3px] border px-3 py-1 text-xs transition ${
                       answers[q.id] === opt
-                        ? "border-ink-text bg-ink-text text-ink-bg"
-                        : "border-ink-border text-ink-muted hover:border-ink-text/40"
+                        ? "border-ink-gold bg-ink-gold text-ink-surface"
+                        : "border-ink-gold/30 text-ink-muted hover:border-ink-gold/60"
                     }`}
                   >
                     {opt}
@@ -235,7 +238,7 @@ export default function MatchDeepDive({
                 type="text"
                 value={answers[q.id] ?? ""}
                 onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                className={fieldClasses}
+                className={boxedFieldClasses}
               />
             )}
           </div>
@@ -250,45 +253,50 @@ export default function MatchDeepDive({
 
   if (stage === "result" && result) {
     return (
-      <div className="mt-4 flex flex-col gap-5">
+      <div className="mt-5 flex flex-col gap-7">
         {/* The grounded plan is intentionally not re-rendered here — it's the
             exact same technique/confidence/explanation already shown in the
             match card above; the API response includes it (unchanged from
             /api/diagnose) so callers other than this UI have it available. */}
         {result.compositeInsight ? (
-          <div className="rounded-xl bg-gradient-to-br from-ink-indigo-start to-ink-indigo-end p-px">
-            <div className="rounded-[11px] bg-ink-surface p-5">
-              <p className="bg-gradient-to-r from-ink-indigo-text-start to-ink-indigo-text-end bg-clip-text font-eyebrow text-xs font-medium uppercase tracking-widest text-transparent">
+          <div>
+            <div className="mb-2 flex items-center gap-2.5">
+              <span className="relative inline-block h-[13px] w-[13px] shrink-0 rounded-full border-[1.5px] border-ink-indigo-end">
+                <span className="absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-indigo-end" />
+              </span>
+              <span className="font-display text-[17px] font-medium text-ink-lavender">
                 Composite Insight
-              </p>
-              <p className="mt-1.5 text-xs italic leading-5 text-ink-muted">
-                Our own creative take on your situation — not from the technique library,
-                just Composite reasoning freshly about what you told us.
-              </p>
-              <p className="mt-4 font-display text-lg font-medium leading-snug text-ink-text">
-                {result.compositeInsight.title}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-ink-text/85">
-                {result.compositeInsight.body}
-              </p>
-              {result.compositeInsight.illustrativeExample && (
-                <div className="mt-4 rounded-md border border-ink-border/80 bg-ink-bg/40 p-3">
-                  <p className="font-eyebrow text-[10px] uppercase tracking-widest text-ink-muted">
-                    Hypothetical example
-                  </p>
-                  <p className="mt-1.5 text-sm italic leading-6 text-ink-text/80">
-                    {result.compositeInsight.illustrativeExample}
-                  </p>
-                </div>
-              )}
-              <div className="mt-5 border-t border-ink-border/80 pt-4">
-                <p className="font-eyebrow text-[10px] uppercase tracking-widest text-ink-muted">
-                  What building this out could look like
+              </span>
+            </div>
+            <p className="mb-4 max-w-[440px] text-[13px] italic leading-[1.6] text-ink-muted-soft">
+              Our own creative take on your situation — not from the technique library,
+              just Composite reasoning freshly about what you told us.
+            </p>
+            <p className="mb-3 font-display text-base font-medium leading-snug text-ink-heading">
+              {result.compositeInsight.title}
+            </p>
+            <p className="mb-5 font-display text-[17px] leading-[1.75] text-ink-text">
+              {result.compositeInsight.body}
+            </p>
+
+            {result.compositeInsight.illustrativeExample && (
+              <div className="mb-5 border-l border-ink-indigo-end/35 pl-3.5">
+                <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-violet-label">
+                  Hypothetical example
                 </p>
-                <p className="mt-1.5 text-sm leading-6 text-ink-text/85">
-                  {result.compositeInsight.pathForward}
+                <p className="text-sm italic leading-[1.65] text-ink-violet-body">
+                  {result.compositeInsight.illustrativeExample}
                 </p>
               </div>
+            )}
+
+            <div className="mb-8">
+              <p className="mb-2 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
+                What building this out could look like
+              </p>
+              <p className="text-[14.5px] leading-[1.7] text-ink-muted">
+                {result.compositeInsight.pathForward}
+              </p>
             </div>
           </div>
         ) : (
@@ -298,52 +306,50 @@ export default function MatchDeepDive({
           </p>
         )}
 
+        <div className="h-px bg-ink-gold/[0.22]" />
+
         {leadStage === "submitted" ? (
-          <p className="rounded-lg border border-ink-border p-4 text-sm text-ink-text/90">
+          <p className="text-sm text-ink-text/90">
             Thanks — we&apos;ve got your details for &quot;{techniqueName}&quot; and will follow up to
             talk through scoping this out.
           </p>
         ) : (
-          <form
-            onSubmit={submitLead}
-            className="flex flex-col gap-3 rounded-lg border border-ink-border p-4"
-          >
-            <p className="text-sm font-medium text-ink-text">
+          <form onSubmit={submitLead} className="flex flex-col">
+            <p className="mb-4 font-display text-lg font-medium text-ink-heading">
               Want to scope this out together?
             </p>
-            <p className="text-xs text-ink-muted">
-              Leave your details and we&apos;ll follow up to talk through turning this into something real.
-            </p>
-            <input
-              type="text"
-              required
-              placeholder="Name"
-              value={leadName}
-              onChange={(e) => setLeadName(e.target.value)}
-              className={fieldClasses}
-            />
-            <input
-              type="email"
-              required
-              placeholder="Email"
-              value={leadEmail}
-              onChange={(e) => setLeadEmail(e.target.value)}
-              className={fieldClasses}
-            />
+            <div className="mb-4 flex gap-4">
+              <input
+                type="text"
+                required
+                placeholder="Name"
+                value={leadName}
+                onChange={(e) => setLeadName(e.target.value)}
+                className={`flex-1 ${underlineFieldClasses}`}
+              />
+              <input
+                type="email"
+                required
+                placeholder="Email"
+                value={leadEmail}
+                onChange={(e) => setLeadEmail(e.target.value)}
+                className={`flex-1 ${underlineFieldClasses}`}
+              />
+            </div>
             <input
               type="tel"
               placeholder="Phone (optional)"
               value={leadPhone}
               onChange={(e) => setLeadPhone(e.target.value)}
-              className={fieldClasses}
+              className={`mb-6 ${underlineFieldClasses}`}
             />
-            {leadError && <p className="text-sm text-red-400">{leadError}</p>}
+            {leadError && <p className="mb-3 text-sm text-red-400">{leadError}</p>}
             <button
               type="submit"
               disabled={leadStage === "submitting"}
               className={primaryButtonClasses}
             >
-              {leadStage === "submitting" ? "Sending…" : "Get in touch →"}
+              {leadStage === "submitting" ? "Sending…" : "Start the conversation"}
             </button>
           </form>
         )}

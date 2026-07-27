@@ -6,31 +6,57 @@ export const dynamic = "force-dynamic";
 
 export default async function DiagnosePage() {
   const techniques = await getTechniques();
-  const sourceTypeById = Object.fromEntries(
-    techniques.map((t) => [t.id, t.sourceType])
+  const count = techniques.length;
+
+  // Same fetch already returns techniques ordered by name (see
+  // lib/techniques.ts) — reused here as the "№ NN / total" library index
+  // shown on each match card, rather than a separate query.
+  const techniqueMetaById = Object.fromEntries(
+    techniques.map((t, i) => [
+      t.id,
+      {
+        sourceType: t.sourceType,
+        sourceIndustry: t.sourceIndustry,
+        sourceCompany: t.sourceCompany,
+        index: i + 1,
+      },
+    ])
   );
 
   return (
     <div className="min-h-full bg-ink-bg font-editorial text-ink-text">
-      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-8 px-4 py-10 sm:px-6 sm:py-16">
+      <header className="flex items-center justify-between border-b border-ink-gold/15 px-6 py-[26px] sm:px-12">
         <Link
           href="/"
-          className="w-fit font-eyebrow text-xs uppercase tracking-widest text-ink-muted transition hover:text-ink-text"
+          className="font-display text-lg font-medium tracking-[0.01em] text-ink-heading"
         >
-          ← Back to all techniques
+          Composite
         </Link>
+        <Link
+          href="/"
+          className="font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-muted transition hover:text-ink-gold"
+        >
+          ← All techniques
+        </Link>
+      </header>
 
-        <header className="flex flex-col gap-2">
-          <h1 className="font-display text-3xl font-medium tracking-tight text-ink-text sm:text-4xl">
-            Diagnose
-          </h1>
-          <p className="max-w-prose text-sm leading-6 text-ink-muted">
-            Describe a problem in your business. We&apos;ll check it against the
-            techniques in the database.
-          </p>
-        </header>
+      <div className="mx-auto flex w-full max-w-[640px] flex-col px-6 pb-[130px] pt-[70px] sm:px-12 sm:pt-[100px]">
+        <p className="font-eyebrow text-[11px] font-medium uppercase tracking-[0.14em] text-ink-gold-dim">
+          Diagnose
+        </p>
+        <h1 className="mt-5 font-display text-3xl font-normal leading-[1.35] text-ink-heading-hero sm:text-4xl">
+          Describe what&apos;s going on in your business.
+        </h1>
+        <p className="mt-[18px] max-w-[540px] text-base leading-[1.65] text-ink-muted">
+          We&apos;ll check it against {count}{" "}
+          techniques traced to real sources. Each match comes with a
+          confidence level and a plain explanation of why it might transfer —
+          and if nothing genuinely fits, we&apos;ll tell you that too.
+        </p>
 
-        <DiagnoseForm sourceTypeById={sourceTypeById} techniqueCount={techniques.length} />
+        <div className="mt-12">
+          <DiagnoseForm techniqueMetaById={techniqueMetaById} techniqueCount={count} />
+        </div>
       </div>
     </div>
   );
