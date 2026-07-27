@@ -30,7 +30,7 @@ export default async function DiagnosePage() {
           </p>
         </header>
 
-        <DiagnoseForm sourceTypeById={sourceTypeById} />
+        <DiagnoseForm sourceTypeById={sourceTypeById} techniqueCount={techniques.length} />
       </div>
     </div>
   );

@@ -22,13 +22,15 @@ interface DiagnoseResult {
 const MAX_LENGTH = 4000;
 const CONTEXT_MAX_LENGTH = 2000;
 
-const LOADING_MESSAGES = [
-  "Reading through what you described…",
-  "Comparing it against 26 documented techniques…",
-  "Checking whether the mechanisms actually apply…",
-  "Weighing strong fits against weak ones…",
-  "Almost there…",
-];
+function buildLoadingMessages(techniqueCount: number): string[] {
+  return [
+    "Reading through what you described…",
+    `Comparing it against ${techniqueCount} documented techniques…`,
+    "Checking whether the mechanisms actually apply…",
+    "Weighing strong fits against weak ones…",
+    "Almost there…",
+  ];
+}
 
 const CONFIDENCE_META: Record<
   Match["confidence"],
@@ -66,9 +68,12 @@ function SourceStamp({ sourceType }: { sourceType: SourceType }) {
 
 export default function DiagnoseForm({
   sourceTypeById,
+  techniqueCount,
 }: {
   sourceTypeById: Record<string, SourceType>;
+  techniqueCount: number;
 }) {
+  const LOADING_MESSAGES = buildLoadingMessages(techniqueCount);
   const [problem, setProblem] = useState("");
   const [businessContext, setBusinessContext] = useState("");
   const [showContext, setShowContext] = useState(false);
