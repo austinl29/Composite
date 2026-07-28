@@ -113,10 +113,16 @@ candidate-count target.
 
 ## 5. Current Database State
 
-**26 approved** techniques live in the database right now (verified directly
+**36 approved** techniques live in the database right now (verified directly
 against both `research/candidates/*.json` and a live DB query while writing
-this file). Full counts across all research to date: 26 approved, 1 rejected,
-6 candidate (33 total generated since Day 2).
+this file). Full counts across all research to date: 36 approved, 1 rejected,
+9 candidate (46 total generated since Day 2) — the 9 candidate entries include
+a new `review-generation-and-volume` pass (2026-07-28, 3 candidates, not yet
+reviewed) alongside the prior 6 pending-revision entries. The per-category
+breakdown below predates several later research passes (reputation-recovery,
+accessing-capital, standing-out-in-a-commoditized-local-market, etc.) and
+lists only the earlier approved set — re-run the script below for the
+current full picture rather than trusting this list's category breakdown.
 
 Approved (`status: "approved"` in `research/candidates/*.json`), by problem type:
 

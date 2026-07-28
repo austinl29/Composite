@@ -527,6 +527,64 @@ rewrite — not approved this pass.
 **After (transferTemplate, matched to the paper):**
 > "If a home-service business already books jobs in advance, the gain here comes from how those bookings get assigned, not just from taking advance bookings at all. Locking a booking to one specific tech, truck, or time slot the moment it's scheduled forces padding sized for that one job's worst case. Keeping the tech/truck assignment flexible — decided close to the actual day rather than fixed at booking time — lets the business absorb more jobs during its busiest weeks with the same crew and trucks, the same way letting a restaurant assign any open table (instead of locking a reservation to one specific table) let it serve more covers without adding tables."
 
+---
+
+## New pass (2026-07-28): review-generation-and-volume
+
+Database-expansion validation surfaced a real gap: the existing review-related
+technique (#35, "Respond to Every Review, Not Just the Nice Ones") covers how a
+business responds to reviews it already has — nothing in the database addresses
+actively generating review volume in the first place (prompting/timing/
+incentivizing customers to leave a review at all). Confirmed #35's own JSON
+entry above covers response behavior only, not solicitation — this is a
+genuine gap, not overlap. Deliberately kept general-service, not
+home-service-native, so it generalizes the way every other category does.
+
+Source: [research/candidates/review-generation-and-volume.json](candidates/review-generation-and-volume.json)
+
+**Research notes — what didn't clear the bar, dropped before reaching candidate
+status:** an Airbnb "incentivized first reviews" experiment (Fradkin & Holtz,
+arXiv 2112.09783) was traced directly but excluded — its actual finding is
+that *paying* for reviews produced more negative, lower-quality reviews with
+no measurable revenue benefit, i.e. a documented reason NOT to incentivize
+reviews financially, not a working technique. A widely-repeated "restaurant
+chain in Hyderabad" QR-code case study, and a cluster of SMS/text
+review-request blog posts (EZTexting, DialMyCalls, Vendasta, and similar),
+were dropped as unnamed/untraceable content-farm-pattern claims. A Trustpilot
+"35% more reviews from reminders" figure was traced directly to Trustpilot's
+own page and could not be confirmed — the actual page only claims reminders
+help "significantly," with no percentage — so it was dropped rather than
+reported as fact.
+
+### 44. Ask Every Customer, Not Just the Happy Ones
+- **Source industry / company:** Hospitality / online travel platform — TripAdvisor
+- **Mechanism:** Left alone, review volume skews toward customers who feel strongly enough — happy or upset — to write one unprompted. A systematic process of soliciting a review from every customer meaningfully grows total review count, though part of that growth is a shift in who reviews (shorter, more routine reviews from customers who'd otherwise have stayed silent) rather than pure net-new volume.
+- **Source:** https://pubsonline.informs.org/doi/10.1287/mnsc.2023.01006
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against the paper's own abstract/summary (Management Science, 2024, Gao/Wang/Ding/Guo): 34.3% review-volume increase, 0.151-star rating increase, but a 15.5% decline in organic/voluntary reviews and 16.9% shorter reviews among the same hotels — reported honestly in `evidence`, not just the favorable headline number. Source-verification pass (2026-07-28) re-confirmed every figure exactly as reported; no revisions needed. `status` updated to `"approved"`.
+
+### 45. Ask After the Glow Fades, Not in the Moment
+- **Source industry / company:** E-commerce / consumer products (cross-industry field experiments) — no single company
+- **Mechanism:** An immediate post-purchase review request can trigger a defensive "psychological reactance" response and measurably reduces follow-through; waiting lets that resistance fade while the experience is still fresh enough to write about, which is why a delayed ask outperforms both no ask and an immediate one.
+- **Source:** https://journals.sagepub.com/doi/abs/10.1177/00222429221143329
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against the paper's own summary (Journal of Marketing, 2023, Jung/Ryu/Han/Cho): two randomized field experiments, immediate reminders reduced submissions vs. control, reminders at 9 and 14 days out increased submissions vs. their own delayed controls, no meaningful timing effect on review quality/content. Source-verification pass (2026-07-28) re-confirmed every figure exactly as reported; no revisions needed. `status` updated to `"approved"`.
+
+### 46. Make the Ask a Two-Touch Habit, Not a One-Shot
+- **Source industry / company:** E-commerce (ratings & reviews platform aggregate data) — Bazaarvoice
+- **Mechanism:** The single biggest lever for review volume is simply having an automated, dedicated request at all rather than leaving it to chance; a follow-up reminder to non-responders on top of that recovers meaningful additional volume, since a real share of intending reviewers just never act on the first ask.
+- **Source:** https://www.bazaarvoice.com/blog/requesting-reviews-from-your-customers-a-guide/
+- **Reviewer decision:** approve
+- **Reviewer notes:** Verified directly against Bazaarvoice's own page (first-party aggregate network data, `vendor-benchmark` tier): "requesting reviews via email can increase product review volume 9x — and sending a follow-up review request email can boost review volume by 50%," quoted directly, not via an aggregator. Source-verification pass (2026-07-28) re-confirmed the figure exactly as reported; no revisions needed. `status` updated to `"approved"`.
+
+### review-generation-and-volume pass summary
+
+| Target | Actual | Note |
+|---|---|---|
+| 3-4 | **3 candidates, 3 approved** | All three verified directly against their primary source (two peer-reviewed journal papers, one vendor first-party aggregate dataset). One additional candidate angle (financial incentives for reviews) was researched and explicitly excluded because the only real study found argues against it; several other angles were dropped as unverifiable or content-farm-pattern before reaching candidate status — see research notes above. Source-verification pass (2026-07-28) re-confirmed every figure/finding exactly as originally reported for all three — no revisions needed, `status` updated to `"approved"` for #44-46 and loaded into the live database. |
+
+---
+
 ## Pass Summary
 
 | Category | Target | Actual | Note |
@@ -538,13 +596,14 @@ rewrite — not approved this pass.
 | #24 re-sourcing | find a mechanism-establishing source | **narrowed, not approved** | Full source-tracing found the Thompson & Kwortnik paper's real finding (pooling vs. locking already-booked reservations) is narrower than the entry's prior mechanism text (reservations vs. walk-in queues generally). `mechanism`/`transferTemplate` rewritten to match the paper; `status` held at `"candidate"` pending confirmation of the rewrite — see before/after above. |
 | **Total this pass** | — | **9 approved, 1 rewritten-pending-confirmation** | Full source-tracing verification complete on all 10 items from the research pass; every source traced directly, not taken on faith. |
 
-### Running total across all research to date (43 numbered candidates)
+### Running total across all research to date (46 numbered candidates)
 
-- **Approved:** 36 (26 prior + 10 from this pass: #34-43, all except #24)
+- **Approved:** 39 (36 prior + 3 from the review-generation-and-volume
+  source-verification pass: #44-46)
 - **Rejected:** 1 (from Day 3, #4 — unchanged)
 - **Candidate** (pending further work): 6 — the original 5 flagged `revise`
-  in Day 3 (#1, #5, #6, #8, #15) plus #24, whose mechanism has now been
-  narrowed to match its source and awaits confirmation before approval.
+  in Day 3 (#1, #5, #6, #8, #15), plus #24 (mechanism narrowed to match its
+  source, awaiting confirmation before approval).
 
 Confirmed by script (`grep`-independent count over every `research/candidates/*.json`
-file's `status` field): **36 approved / 1 rejected / 6 candidate = 43 total.**
+file's `status` field): **39 approved / 1 rejected / 6 candidate = 46 total.**

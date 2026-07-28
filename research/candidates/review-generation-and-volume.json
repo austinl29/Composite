@@ -1,0 +1,42 @@
+{
+  "problemType": "review-generation-and-volume",
+  "generatedAt": "2026-07-28T20:27:01Z",
+  "candidates": [
+    {
+      "name": "Ask Every Customer, Not Just the Happy Ones",
+      "sourceIndustry": "hospitality / online travel platform",
+      "sourceCompany": "TripAdvisor",
+      "mechanism": "Left alone, review volume skews toward customers who feel strongly enough — happy or upset — to write one unprompted. Adopting an actual, systematic process of soliciting a review from every customer, not just following up after a complaint, meaningfully grows total review count. The honest tradeoff: a portion of that growth comes from customers who would have left a review anyway, just shorter and more routine once asked directly, rather than being pure net-new volume.",
+      "evidence": "A peer-reviewed 2024 Management Science study by Baojun Gao, Jing Wang, Xiaojie Ding, and Yue Guo, using a two-stage difference-in-differences design around TripAdvisor's hotel review-solicitation program, found solicited hotels saw a 34.3% increase in overall review volume and a 0.151-star average rating increase. The same study found voluntary/organic review volume declined 15.5% among those hotels and solicited reviews ran 16.9% shorter on average — evidence the intervention grows total review count meaningfully, but isn't a free lunch.",
+      "sourceType": "peer-reviewed",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting", "roofing"],
+      "transferTemplate": "Most service businesses only get reviews from whoever unprompted decides to leave one — which skews toward the extremes. Building a real process to ask every customer after a job, not just chasing reviews after a complaint, is what actually drives review count up over time. Worth knowing going in: a normally-happy customer who's asked directly may write something shorter and more matter-of-fact than someone who felt strongly enough to write in unprompted — the count grows, but it takes real effort to keep those reviews reading as genuine rather than assembly-line.",
+      "sourceUrl": "https://pubsonline.informs.org/doi/10.1287/mnsc.2023.01006",
+      "status": "approved"
+    },
+    {
+      "name": "Ask After the Glow Fades, Not in the Moment",
+      "sourceIndustry": "e-commerce / consumer products (cross-industry field experiments)",
+      "sourceCompany": null,
+      "mechanism": "Asking for a review the instant a purchase or job finishes can trigger a defensive reaction — it reads as pressure applied while the customer is still processing the transaction, and that resistance measurably reduces whether they follow through. Waiting lets that resistance fade while the experience is still fresh enough to write about accurately, which is why a delayed ask outperforms both no ask and an immediate ask.",
+      "evidence": "Two peer-reviewed randomized field experiments published in the Journal of Marketing (2023) by Miyeon Jung, Sunghan Ryu, Sang Pil Han, and Daegon Cho found immediate post-purchase review reminders reduced review submission versus a no-reminder control group, while reminders sent later (tested at nine and fourteen days out) significantly increased submission likelihood versus their own delayed no-reminder control groups. Reminder timing had little measurable effect on the quality or informativeness of the review text itself.",
+      "sourceType": "peer-reviewed",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting", "roofing"],
+      "transferTemplate": "Don't ask for a review the moment the invoice is paid and the crew is packing up the truck — right after money changes hands is exactly when a direct ask can feel like a hard sell. Build the request into a follow-up a week or two after the job (a text or email once the customer has had time to actually live with the work), rather than tacking it onto the final handshake.",
+      "sourceUrl": "https://journals.sagepub.com/doi/abs/10.1177/00222429221143329",
+      "status": "approved"
+    },
+    {
+      "name": "Make the Ask a Two-Touch Habit, Not a One-Shot",
+      "sourceIndustry": "e-commerce (ratings & reviews platform aggregate data)",
+      "sourceCompany": "Bazaarvoice",
+      "mechanism": "The biggest lever for review volume isn't a clever prompt — it's simply having an automated, dedicated request at all instead of leaving it to chance. On top of that, a single follow-up reminder to customers who didn't respond to the first ask reliably recovers meaningful additional volume, because a real share of customers who intended to leave a review just never got around to the first request.",
+      "evidence": "Bazaarvoice's own aggregate network data, published directly on Bazaarvoice's site, reports that requesting a review by email increases product review volume up to 9x versus no systematic request, and that sending one follow-up review-request email on top of the initial ask boosts review volume by an additional 50%.",
+      "sourceType": "vendor-benchmark",
+      "targetVerticals": ["HVAC", "plumbing", "electrical", "pest control", "landscaping", "general contracting", "roofing"],
+      "transferTemplate": "If review requests currently happen only when someone on the team remembers to ask, that inconsistency is likely costing far more volume than any wording tweak would fix. Set up a simple two-touch cadence instead: one request sent automatically after every completed job, and a single follow-up reminder if there's no response within a set window — rather than a one-off ask, or no systematic ask at all.",
+      "sourceUrl": "https://www.bazaarvoice.com/blog/requesting-reviews-from-your-customers-a-guide/",
+      "status": "approved"
+    }
+  ]
+}
