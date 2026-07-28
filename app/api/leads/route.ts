@@ -180,6 +180,18 @@ export async function POST(request: Request) {
     pathForwardText = rawBody.pathForwardText;
   }
 
+  const rawSessionId = rawBody.sessionId;
+  let sessionId: string | null = null;
+  if (rawSessionId !== undefined && rawSessionId !== null && rawSessionId !== "") {
+    if (typeof rawSessionId !== "string") {
+      return NextResponse.json(
+        { error: "'sessionId' must be a string if provided." },
+        { status: 400 }
+      );
+    }
+    sessionId = rawSessionId;
+  }
+
   // Grounding: re-derive the technique name from the live DB by id — never
   // trust a client-supplied technique name, and reject unknown ids outright.
   const technique = await getTechniqueById(techniqueId);
@@ -191,11 +203,26 @@ export async function POST(request: Request) {
   }
 
   const pool = getPool();
+
+  if (sessionId !== null) {
+    const { rows: sessionRows } = await pool.query(
+      `select id from diagnose_sessions where id = $1`,
+      [sessionId]
+    );
+    if (sessionRows.length === 0) {
+      return NextResponse.json(
+        { error: "No diagnose session with that sessionId exists." },
+        { status: 404 }
+      );
+    }
+  }
+
   const { rows } = await pool.query(
     `insert into leads
       (name, email, phone, problem, technique_id, technique_name, business_context,
-       followup_answers, grounded_plan_text, composite_insight_text, path_forward_text)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       followup_answers, grounded_plan_text, composite_insight_text, path_forward_text,
+       session_id)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
      returning id, submitted_at`,
     [
       name.trim(),
@@ -209,6 +236,7 @@ export async function POST(request: Request) {
       groundedPlanText,
       compositeInsightText,
       pathForwardText,
+      sessionId,
     ]
   );
 

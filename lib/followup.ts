@@ -3,6 +3,8 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { FOLLOWUP_SYSTEM_PROMPT } from "@/lib/prompts/followup";
 import { DEFAULT_DIAGNOSE_CONFIG, type DiagnoseModelConfig } from "@/lib/diagnose";
+import { buildFileContentBlocks, type UploadedFileRef } from "@/lib/fileContext";
+import type Anthropic from "@anthropic-ai/sdk";
 import type { Technique } from "@/types/technique";
 
 export { DEFAULT_DIAGNOSE_CONFIG as DEFAULT_FOLLOWUP_CONFIG };
@@ -45,11 +47,13 @@ export async function runFollowupQuestions({
   technique,
   problem,
   businessContext,
+  file,
   config = DEFAULT_DIAGNOSE_CONFIG,
 }: {
   technique: Technique;
   problem: string;
   businessContext?: string;
+  file?: UploadedFileRef;
   config?: DiagnoseModelConfig;
 }): Promise<FollowupRunOutcome> {
   const techniqueForPrompt = {
@@ -63,6 +67,17 @@ export async function runFollowupQuestions({
     businessContext && businessContext.trim()
       ? `\n\nBusiness context (operator-provided, free text):\n"""\n${businessContext.trim()}\n"""`
       : "";
+
+  const textBlock = `Matched technique (JSON):\n${JSON.stringify(
+    techniqueForPrompt,
+    null,
+    2
+  )}\n\nOperator's original problem description:\n"""\n${problem}\n"""${businessContextBlock}`;
+
+  const fileContent = await buildFileContentBlocks(file);
+  const content: string | Anthropic.Messages.ContentBlockParam[] = fileContent
+    ? [{ type: "text", text: textBlock }, ...fileContent.blocks]
+    : textBlock;
 
   const client = getAnthropicClient();
   const startedAt = Date.now();
@@ -80,11 +95,7 @@ export async function runFollowupQuestions({
       messages: [
         {
           role: "user",
-          content: `Matched technique (JSON):\n${JSON.stringify(
-            techniqueForPrompt,
-            null,
-            2
-          )}\n\nOperator's original problem description:\n"""\n${problem}\n"""${businessContextBlock}`,
+          content,
         },
       ],
     });

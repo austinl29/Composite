@@ -26,6 +26,9 @@ const DIAGNOSIS_RELATED_FILES = [
   "app/api/synthesize/route.ts",
   "evals/followup-synthesize-cases.json",
   "app/api/leads/route.ts",
+  "lib/fileContext.ts",
+  "lib/uploadedFileParam.ts",
+  "app/api/upload/route.ts",
 ];
 
 // Failure categories that MUST be zero for the push-gate hook to allow a
@@ -175,6 +178,28 @@ for (const c of cases) {
     let httpStatus;
     try {
       const [techniqueId] = resolveNames([c.techniqueName]);
+
+      // simulatedFileText exercises the real upload -> blob storage -> fetch
+      // -> inline-as-untrusted-text path end to end, rather than faking a
+      // file reference — the adversarial-injection case uses this to plant
+      // an "ignore prior instructions" attempt inside what looks like a
+      // CRM-export text file the operator uploaded.
+      let file;
+      if (c.simulatedFileText) {
+        const formData = new FormData();
+        formData.append(
+          "file",
+          new Blob([c.simulatedFileText], { type: "text/plain" }),
+          c.simulatedFileName || "injected-notes.txt"
+        );
+        const uploadRes = await fetch(`${baseUrl}/api/upload`, { method: "POST", body: formData });
+        if (!uploadRes.ok) {
+          throw new Error(`simulatedFileText upload failed: HTTP ${uploadRes.status}`);
+        }
+        const uploadData = await uploadRes.json();
+        file = { url: uploadData.url, contentType: uploadData.contentType, filename: uploadData.filename };
+      }
+
       const res = await fetch(`${baseUrl}/api/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -185,6 +210,7 @@ for (const c of cases) {
           problem: c.problem,
           businessContext: c.businessContext || undefined,
           followupAnswers: c.followupAnswers || [],
+          file,
         }),
       });
       httpStatus = res.status;

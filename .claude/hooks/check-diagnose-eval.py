@@ -2,8 +2,9 @@
 """
 PreToolUse (Bash) push-gate: blocks `git push` unless evals/.last-run.json
 shows the eval suite ran against the current state of the diagnosis-related
-files (now covering /api/diagnose, /api/followup-questions, and
-/api/synthesize), with zero blocking failures — fabrication, forbidden-
+files (covering /api/diagnose, /api/followup-questions, /api/synthesize,
+and the file-upload path they read from: /api/upload, lib/fileContext.ts,
+lib/uploadedFileParam.ts), with zero blocking failures — fabrication, forbidden-
 technique match, a fabricated-projection/citation-claim pattern hit, a
 malformed structured response, a grounded-plan echo mismatch, or an
 unmarked-hypothetical Composite Insight example.
@@ -78,6 +79,9 @@ DIAGNOSIS_RELATED_FILES = [
     "app/api/synthesize/route.ts",
     "evals/followup-synthesize-cases.json",
     "app/api/leads/route.ts",
+    "lib/fileContext.ts",
+    "lib/uploadedFileParam.ts",
+    "app/api/upload/route.ts",
 ]
 
 if not last_run_path.exists():

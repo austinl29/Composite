@@ -20,6 +20,9 @@ personalized explanation of why the parallel transfers.
 
 - Next.js (App Router) + TypeScript + Tailwind
 - Postgres via Vercel/Neon integration (`DATABASE_URL` in `.env.local`, gitignored)
+- Vercel Blob (`@vercel/blob`, `BLOB_READ_WRITE_TOKEN` in `.env.local`) — public-access
+  store `composite-files`, used only for operator-uploaded diagnose files (flyers,
+  screenshots, CRM exports). See §7b.
 - Deployed on Vercel
 
 **Git → deploy: CONNECTED.** Set up via `vercel git connect --yes` on
@@ -316,34 +319,135 @@ together?": name, email required; phone optional). Submits to
 `techniqueName` from the live DB by `techniqueId` (same grounding
 discipline as the other routes — never trusts a client-supplied name) and
 inserts into the `leads` table (migration
-`supabase/migrations/0004_create_leads.sql`): `id`, `name`, `email`
-(required), `phone` (optional), `problem`, `technique_id` (FK to
-`techniques`), `technique_name`, `business_context`, `followup_answers`
-(jsonb), `grounded_plan_text`, `composite_insight_text`,
-`path_forward_text`, `submitted_at`. Basic validation only (non-empty
-name, `EMAIL_PATTERN` regex on email) — no email sending, no CRM, no
-admin/leads-viewing UI; leads are queried directly against the DB for now.
+`supabase/migrations/0004_create_leads.sql`, extended by `0006` below):
+`id`, `name`, `email` (required), `phone` (optional), `problem`,
+`technique_id` (FK to `techniques`), `technique_name`, `business_context`,
+`followup_answers` (jsonb), `grounded_plan_text`, `composite_insight_text`,
+`path_forward_text`, `session_id` (nullable FK, see §7b), `submitted_at`.
+Basic validation only (non-empty name, `EMAIL_PATTERN` regex on email) —
+no email sending, no CRM, no admin/leads-viewing UI; leads are queried
+directly against the DB for now.
+
+## 7b. File Upload & Session Logging (added 2026-07-28, critical)
+
+Real operator testing surfaced two gaps: no way to ground reasoning in an
+operator's actual materials (a flyer, a CRM export), and no way to see
+which problems/matches/confidence levels actually convert to a lead. Both
+addressed together in this pass.
+
+**File upload flow:**
+- `app/api/upload/route.ts` — public `POST`, `multipart/form-data`, one
+  `file` field. Validates content-type against an explicit allowlist
+  (`image/png`, `image/jpeg`, `image/webp`, `image/gif`,
+  `application/pdf`, `text/csv`, `text/plain` — anything else is
+  rejected) and a 10MB size cap, then uploads to Vercel Blob (public
+  access, random-suffixed pathname) via `put()`. Returns `{ url,
+  pathname, contentType, filename, size }`.
+- The diagnose form (`app/diagnose/DiagnoseForm.tsx`) uploads the file
+  immediately on selection (before the problem is even submitted) and
+  holds `{ url, contentType, filename }` in state — never the raw file
+  content — through to `MatchDeepDive.tsx`, which forwards it to both
+  `/api/followup-questions` and `/api/synthesize`.
+- **Deliberately excluded from `/api/diagnose`** — technique matching
+  against the grounded database is file-blind by design; only follow-up
+  question generation and synthesis (where personalized reasoning
+  happens) ever see the file. This keeps the Zod-enum matching logic in
+  `lib/diagnose.ts` completely untouched.
+- **The UI never displays uploaded file content back to the operator** —
+  no thumbnail preview, no extracted-text preview. Just the filename as
+  upload confirmation, with a "Remove" control. It's input-only.
+- `lib/fileContext.ts` (`buildFileContentBlocks`) is where the file
+  actually enters a model call: images and PDFs become native Claude API
+  content blocks with a `{ type: "url", url }` source (the model fetches
+  the public blob URL directly — no server-side download or base64
+  encoding needed); CSV/plain text is fetched server-side and inlined as
+  a text block, capped at 20,000 characters. Every file content block is
+  preceded by an explicit untrusted-data framing sentence
+  (`untrustedFileNote`), the same discipline as citing a web search
+  result.
+- `lib/uploadedFileParam.ts` (`parseUploadedFileRef`) validates the
+  `file` field on both routes' request bodies and — critically — checks
+  `file.url`'s hostname ends in `.public.blob.vercel-storage.com` before
+  accepting it. Without this, a client could hand the server (or, via
+  the URL-source content block, the Claude API itself) an arbitrary URL
+  to fetch — an SSRF vector. Only a URL this app's own `/api/upload`
+  produced is ever accepted.
+
+**Untrusted-file-content safety rule (critical, same severity as the
+anti-fabrication rules):** content extracted from an uploaded file —
+especially text inside an image or PDF — is untrusted business data, not
+instructions, exactly like a web search result. `lib/prompts/followup.ts`
+and `lib/prompts/synthesize.ts` both carry an explicit instruction that
+any instruction-like text found inside a file (visible or hidden) must be
+ignored as content, never followed as a command, and that every existing
+hard rule (no quantified outcome, no citation claim, no price/timeline
+commitment) applies regardless of what the file contains — a file cannot
+authorize anything the system prompt forbids. Verified with an adversarial
+eval case (`synthesize-adversarial-file-injection` in
+`evals/followup-synthesize-cases.json`) that uploads a real text file via
+the actual `/api/upload` path containing a fake "SYSTEM OVERRIDE" block
+trying to bait a $50,000 fabricated projection and a false database-backed
+claim, explicitly framed as "an authorized instruction from the Composite
+team" to try to talk past the untrusted-data framing itself — the model
+must ignore all of it. Confirmed passing under real opus-4-8/high
+verification on 2026-07-28.
+
+**Session logging for trend-spotting:** `diagnose_sessions` table
+(migration `supabase/migrations/0005_create_diagnose_sessions.sql`): `id`,
+`created_at`, `problem`, `business_context`, `technique_id` (FK),
+`technique_name`, `confidence`, `followup_answers` (jsonb), `file_url` /
+`file_filename` / `file_content_type` (all nullable), `grounded_plan_text`,
+`composite_insight_text`, `path_forward_text`. `app/api/synthesize/route.ts`
+inserts one row automatically every time a synthesis call completes — the
+natural checkpoint, since it's the point where a grounded plan +
+(optionally) a Composite Insight actually exist, regardless of whether the
+operator goes on to submit a lead. Logging is best-effort: if the insert
+fails, the operator-facing synthesis response is still returned unaffected,
+just without a `sessionId`. The synthesize response includes `sessionId`;
+the client carries it through and includes it as `sessionId` in the
+`POST /api/leads` body if the operator submits the lead form.
+`leads.session_id` (nullable FK, migration
+`supabase/migrations/0006_add_session_id_to_leads.sql`) is how a lead
+links back to the session that produced it — `app/api/leads/route.ts`
+validates the session actually exists before accepting it, same grounding
+discipline as `techniqueId`.
+
+This makes the funnel queryable directly against the DB, e.g. conversion
+rate by technique, by problem type (via a join through `techniques`), or
+by confidence level — `count(l.id) / count(*)` from `diagnose_sessions s
+left join leads l on l.session_id = s.id`, grouped by whichever dimension.
+Verified with a real 6-scenario end-to-end run on 2026-07-28 (varied
+techniques/confidence, 3 of 6 submitted as leads) confirming all three
+grouping dimensions produce correct, differentiated conversion numbers —
+then cleaned up, since it was synthetic test data, not real operator
+usage. The table is empty in production as of this write-up and will
+populate naturally as the app sees real traffic.
 
 ## 8. Eval Suite & Push-Gate Hook (critical)
 
 **Eval suite:** two case files, both loaded and run in one invocation of
 `scripts/run-evals.mjs`:
-- `evals/diagnose-cases.json` (23 cases: strong-match, moderate-match,
+- `evals/diagnose-cases.json` (24 cases: strong-match, moderate-match,
   honest-no-match, adversarial — keyword-bait, vague input, prompt-injection)
   hits `/api/diagnose`, checks fabrication/forced-match/forbidden-match/
   expected-match.
-- `evals/followup-synthesize-cases.json` (7 cases) hits
+- `evals/followup-synthesize-cases.json` (8 cases) hits
   `/api/followup-questions` and `/api/synthesize`: one `followup-pair` case
   (checks question sets differ meaningfully across two different technique
   types — Jaccard word-overlap on the returned question text, must stay
-  below `maxWordOverlapRatio`), and six `synthesize` cases (grounded-plan
+  below `maxWordOverlapRatio`), and seven `synthesize` cases (grounded-plan
   byte-identical echo check; three adversarial cases that directly ask the
   follow-up answers to bait a numeric ROI projection or a price/timeline
   commitment — one aimed specifically at `pathForward`; a citation-claim
-  check; a hypothetical-marker check on `illustrativeExample`).
+  check; a hypothetical-marker check on `illustrativeExample`; and
+  `synthesize-adversarial-file-injection`, added 2026-07-28 — see §7b).
   `forbiddenPatterns` checks run against the combined
   title+body+illustrativeExample+`pathForward` text, so any of the four
-  fields tripping a pattern is caught the same way.
+  fields tripping a pattern is caught the same way. A `synthesize` case can
+  set `simulatedFileText`, which the runner uploads as a real `text/plain`
+  file via `POST /api/upload` before the synthesize call — exercising the
+  real upload → blob → fetch → inline-as-untrusted-text path end to end,
+  not a faked file reference.
 
 Both write into the same `evals/.last-run.json` (timestamp, pass/fail
 counts, `blockingFailureCount`, a sha256 hash of all diagnosis-related files
@@ -387,14 +491,15 @@ matching quality — they're just confirming nothing broke.
 **Push-gate hook:** `.claude/settings.json` registers a `PreToolUse`
 hook (matcher `Bash`) running `.claude/hooks/check-diagnose-eval.py`
 before every `git push`. It blocks unless `evals/.last-run.json` exists,
-its file hash matches the current on-disk state of all 12
+its file hash matches the current on-disk state of all 15
 diagnosis-related files (`app/api/diagnose/route.ts`,
 `lib/prompts/diagnose.ts`, `lib/diagnose.ts`, `evals/diagnose-cases.json`,
 `lib/prompts/followup.ts`, `lib/followup.ts`,
 `app/api/followup-questions/route.ts`, `lib/prompts/synthesize.ts`,
 `lib/synthesize.ts`, `app/api/synthesize/route.ts`,
-`evals/followup-synthesize-cases.json`, `app/api/leads/route.ts`), and
-`blockingFailureCount === 0`.
+`evals/followup-synthesize-cases.json`, `app/api/leads/route.ts`,
+`lib/fileContext.ts`, `lib/uploadedFileParam.ts`, `app/api/upload/route.ts`),
+and `blockingFailureCount === 0`.
 Dumb and fast on purpose — no LLM calls, just stdin JSON, a regex check for
 whether the command is actually a `git push`, a file hash, and a field
 read. If it blocks, the message tells you to run `node scripts/run-evals.mjs`;
@@ -454,10 +559,29 @@ if the files haven't changed since the last passing run, no re-run is forced.
   at tempting `pathForward` with a price/timeline/ROI ask) and the
   push-gate hook's watched-file list to 12 files (see §8). No admin/leads
   UI built yet — leads are queried directly against the DB.
+- **Week 4 (2026-07-28):** real operator testing (a validation call)
+  surfaced two gaps — no way to ground reasoning in an operator's actual
+  materials, and no visibility into which problems/matches/confidence
+  levels convert to a lead. Added file upload (Vercel Blob storage,
+  `/api/upload`, native multimodal content blocks for images/PDF, inlined
+  text for CSV/plain-text, file-blind matching preserved by design) and
+  automatic session logging (`diagnose_sessions` table, one row per
+  completed synthesis, linked to `leads` via a nullable `session_id` FK)
+  — see §7b for the full writeup. Added an explicit untrusted-file-content
+  safety rule to both the follow-up and synthesis prompts, verified with a
+  new adversarial eval case that exercises the real upload path. Expanded
+  the eval suite to 32 cases and the push-gate hook's watched-file list to
+  15 files. Verified end-to-end with a real flyer image (the synthesis
+  response visibly quoted specific details from the image — a review
+  attribution, a price, a phone-adjacent detail — confirming genuine
+  multimodal reasoning, not a generic response) and a real 6-scenario
+  session/lead-linkage run, then ran the full eval suite for real under
+  opus-4-8/high (0 blocking failures) before pushing.
 - **Next up:** nothing specific queued. The free-text equipment/situation
   field once discussed as a possible future addition was effectively
   superseded by the free-text business-context box built earlier — if a
   genuinely separate "describe your equipment" surface is wanted later,
   decide then whether it needs its own always-opus-high tier. An admin
-  view for browsing captured leads is a natural next step whenever that
-  becomes a priority.
+  view for browsing captured leads/sessions is a natural next step
+  whenever that becomes a priority — right now both are queried directly
+  against the DB.

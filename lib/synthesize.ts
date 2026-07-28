@@ -3,6 +3,8 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { getAnthropicClient } from "@/lib/anthropic";
 import { SYNTHESIZE_SYSTEM_PROMPT } from "@/lib/prompts/synthesize";
 import { DEFAULT_DIAGNOSE_CONFIG, type DiagnoseModelConfig } from "@/lib/diagnose";
+import { buildFileContentBlocks, type UploadedFileRef } from "@/lib/fileContext";
+import type Anthropic from "@anthropic-ai/sdk";
 import type { Technique } from "@/types/technique";
 
 export { DEFAULT_DIAGNOSE_CONFIG as DEFAULT_SYNTHESIZE_CONFIG };
@@ -93,7 +95,7 @@ async function callInsightModel({
   config,
 }: {
   system: string;
-  userContent: string;
+  userContent: string | Anthropic.Messages.ContentBlockParam[];
   config: DiagnoseModelConfig;
 }): Promise<{ ok: true; insight: CompositeInsight } | { ok: false; error: string }> {
   const client = getAnthropicClient();
@@ -131,6 +133,7 @@ export async function runSynthesis({
   problem,
   businessContext,
   followupAnswers,
+  file,
   config = DEFAULT_DIAGNOSE_CONFIG,
 }: {
   technique: Technique;
@@ -139,6 +142,7 @@ export async function runSynthesis({
   problem: string;
   businessContext?: string;
   followupAnswers: FollowupAnswer[];
+  file?: UploadedFileRef;
   config?: DiagnoseModelConfig;
 }): Promise<SynthesizeRunOutcome> {
   // The grounded plan is a pass-through, not a new generation: the technique
@@ -171,11 +175,16 @@ export async function runSynthesis({
           .join("\n")}`
       : "";
 
-  const baseUserContent = `Matched technique (JSON, for context only — already shown to the operator elsewhere):\n${JSON.stringify(
+  const baseUserText = `Matched technique (JSON, for context only — already shown to the operator elsewhere):\n${JSON.stringify(
     techniqueForPrompt,
     null,
     2
   )}\n\nOperator's original problem description:\n"""\n${problem}\n"""${businessContextBlock}${followupBlock}`;
+
+  const fileContent = await buildFileContentBlocks(file);
+  const baseUserContent: string | Anthropic.Messages.ContentBlockParam[] = fileContent
+    ? [{ type: "text", text: baseUserText }, ...fileContent.blocks]
+    : baseUserText;
 
   const startedAt = Date.now();
 
@@ -191,7 +200,12 @@ export async function runSynthesis({
   let violation = findSafetyViolation(attempt.insight);
   if (violation) {
     // One retry with an explicit correction, before giving up and suppressing.
-    const retryContent = `${baseUserContent}\n\nYour previous attempt violated a hard rule and was discarded: ${violation}. Do not quantify any outcome (no dollar figures, percentages, or counts implying a result) and do not claim citation or database backing anywhere in your answer. Try again, keeping the idea just as specific and creative on WHAT to do — only the numeric-projection and citation-claim language must be removed.`;
+    // The correction is appended as its own text block so any file content
+    // (image/document/inlined text) from the original attempt is still present.
+    const correctionText = `Your previous attempt violated a hard rule and was discarded: ${violation}. Do not quantify any outcome (no dollar figures, percentages, or counts implying a result) and do not claim citation or database backing anywhere in your answer. Try again, keeping the idea just as specific and creative on WHAT to do — only the numeric-projection and citation-claim language must be removed.`;
+    const retryContent: string | Anthropic.Messages.ContentBlockParam[] = fileContent
+      ? [{ type: "text", text: baseUserText }, ...fileContent.blocks, { type: "text", text: correctionText }]
+      : `${baseUserText}\n\n${correctionText}`;
     attempt = await callInsightModel({
       system: SYNTHESIZE_SYSTEM_PROMPT,
       userContent: retryContent,

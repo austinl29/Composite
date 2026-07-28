@@ -25,9 +25,16 @@ interface CompositeInsight {
 }
 
 interface SynthesizeResult {
+  sessionId: string | null;
   groundedPlan: GroundedPlan;
   compositeInsight: CompositeInsight | null;
   insightSuppressed: boolean;
+}
+
+interface UploadedFile {
+  url: string;
+  contentType: string;
+  filename: string;
 }
 
 type Stage = "idle" | "loading-questions" | "questions" | "loading-synthesis" | "result";
@@ -49,6 +56,7 @@ export default function MatchDeepDive({
   explanation,
   problem,
   businessContext,
+  file,
 }: {
   techniqueId: string;
   techniqueName: string;
@@ -57,6 +65,7 @@ export default function MatchDeepDive({
   sourceType?: string;
   problem: string;
   businessContext: string;
+  file?: UploadedFile;
 }) {
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +86,12 @@ export default function MatchDeepDive({
       const res = await fetch("/api/followup-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ techniqueId, problem, businessContext: businessContext || undefined }),
+        body: JSON.stringify({
+          techniqueId,
+          problem,
+          businessContext: businessContext || undefined,
+          file,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -114,6 +128,7 @@ export default function MatchDeepDive({
           problem,
           businessContext: businessContext || undefined,
           followupAnswers,
+          file,
         }),
       });
       const data = await res.json();
@@ -152,6 +167,7 @@ export default function MatchDeepDive({
           techniqueId,
           businessContext: businessContext || undefined,
           followupAnswers,
+          sessionId: result.sessionId ?? undefined,
           groundedPlanText: result.groundedPlan.explanation,
           compositeInsightText: result.compositeInsight
             ? [result.compositeInsight.title, result.compositeInsight.body, result.compositeInsight.illustrativeExample]

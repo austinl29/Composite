@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getTechniqueById } from "@/lib/techniques";
 import { runFollowupQuestions } from "@/lib/followup";
+import { parseUploadedFileRef } from "@/lib/uploadedFileParam";
 
 const BUSINESS_CONTEXT_MAX_LENGTH = 2000;
 const PROBLEM_MAX_LENGTH = 4000;
@@ -58,6 +59,11 @@ export async function POST(request: Request) {
     businessContext = rawBusinessContext;
   }
 
+  const fileResult = parseUploadedFileRef(rawBody.file);
+  if (!fileResult.ok) {
+    return NextResponse.json({ error: fileResult.error }, { status: 400 });
+  }
+
   // Grounding: only ever generate questions about a technique that actually
   // exists in the live database — never trust a client-supplied id blindly.
   const technique = await getTechniqueById(techniqueId);
@@ -68,7 +74,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const outcome = await runFollowupQuestions({ technique, problem, businessContext });
+  const outcome = await runFollowupQuestions({
+    technique,
+    problem,
+    businessContext,
+    file: fileResult.file,
+  });
 
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: 502 });

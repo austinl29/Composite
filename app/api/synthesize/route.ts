@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getTechniqueById } from "@/lib/techniques";
 import { runSynthesis, type FollowupAnswer } from "@/lib/synthesize";
+import { parseUploadedFileRef } from "@/lib/uploadedFileParam";
+import { getPool } from "@/lib/db";
 
 const BUSINESS_CONTEXT_MAX_LENGTH = 2000;
 const PROBLEM_MAX_LENGTH = 4000;
@@ -116,6 +118,11 @@ export async function POST(request: Request) {
     followupAnswers = rawAnswers as FollowupAnswer[];
   }
 
+  const fileResult = parseUploadedFileRef(rawBody.file);
+  if (!fileResult.ok) {
+    return NextResponse.json({ error: fileResult.error }, { status: 400 });
+  }
+
   // Grounding: re-derive the technique from the live DB by id — never trust
   // a client-supplied name/mechanism/sourceType for the grounded plan.
   const technique = await getTechniqueById(techniqueId);
@@ -133,13 +140,60 @@ export async function POST(request: Request) {
     problem,
     businessContext,
     followupAnswers,
+    file: fileResult.file,
   });
 
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: 502 });
   }
 
+  // Log every completed synthesis, regardless of whether a lead ever
+  // follows — the natural checkpoint for trend-spotting (which techniques/
+  // problem types/confidence levels actually convert). Logging failure
+  // must never break the operator-facing response; if the insert fails,
+  // return the synthesis result anyway with no sessionId.
+  const compositeInsightText = outcome.result.compositeInsight
+    ? [
+        outcome.result.compositeInsight.title,
+        outcome.result.compositeInsight.body,
+        outcome.result.compositeInsight.illustrativeExample,
+      ]
+        .filter(Boolean)
+        .join("\n\n")
+    : null;
+
+  let sessionId: string | null = null;
+  try {
+    const pool = getPool();
+    const { rows } = await pool.query(
+      `insert into diagnose_sessions
+        (problem, business_context, technique_id, technique_name, confidence,
+         followup_answers, file_url, file_filename, file_content_type,
+         grounded_plan_text, composite_insight_text, path_forward_text)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+       returning id`,
+      [
+        problem,
+        businessContext ?? null,
+        technique.id,
+        technique.name,
+        confidence,
+        JSON.stringify(followupAnswers),
+        fileResult.file?.url ?? null,
+        fileResult.file?.filename ?? null,
+        fileResult.file?.contentType ?? null,
+        outcome.result.groundedPlan.explanation,
+        compositeInsightText,
+        outcome.result.compositeInsight?.pathForward ?? null,
+      ]
+    );
+    sessionId = rows[0].id;
+  } catch (err) {
+    console.error("[synthesize] failed to log diagnose_sessions row:", err);
+  }
+
   return NextResponse.json({
+    sessionId,
     groundedPlan: outcome.result.groundedPlan,
     compositeInsight: outcome.result.compositeInsight,
     insightSuppressed: outcome.result.insightSuppressed,

@@ -45,6 +45,24 @@ function buildLoadingMessages(techniqueCount: number): string[] {
   ];
 }
 
+interface UploadedFile {
+  url: string;
+  contentType: string;
+  filename: string;
+}
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const ACCEPTED_FILE_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+  "text/csv",
+  "text/plain",
+];
+const ACCEPTED_FILE_EXTENSIONS = ".png,.jpg,.jpeg,.webp,.gif,.pdf,.csv,.txt";
+
 const CONFIDENCE_LABEL: Record<Match["confidence"], string> = {
   strong: "strong confidence",
   moderate: "moderate confidence",
@@ -86,6 +104,49 @@ export default function DiagnoseForm({
   const [result, setResult] = useState<DiagnoseResult | null>(null);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
 
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [fileUploading, setFileUploading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file after a remove
+    if (!file) return;
+
+    setFileError(null);
+    if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+      setFileError("Unsupported file type. Use an image, PDF, CSV, or plain text file.");
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileError("File is too large (max 10MB).");
+      return;
+    }
+
+    setFileUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        setFileError(data.error ?? "Upload failed.");
+      } else {
+        setUploadedFile({ url: data.url, contentType: data.contentType, filename: data.filename });
+      }
+    } catch {
+      setFileError("Upload failed. Try again.");
+    } finally {
+      setFileUploading(false);
+    }
+  }
+
+  function removeUploadedFile() {
+    setUploadedFile(null);
+    setFileError(null);
+  }
+
   useEffect(() => {
     if (!loading) {
       setLoadingMessageIndex(0);
@@ -99,6 +160,7 @@ export default function DiagnoseForm({
 
   const submittedProblemRef = useRef("");
   const submittedContextRef = useRef("");
+  const submittedFileRef = useRef<UploadedFile | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -106,6 +168,7 @@ export default function DiagnoseForm({
 
     submittedProblemRef.current = problem;
     submittedContextRef.current = businessContext;
+    submittedFileRef.current = uploadedFile;
     setLoading(true);
     setError(null);
     setResult(null);
@@ -197,10 +260,50 @@ export default function DiagnoseForm({
           )}
         </div>
 
+        <div className="mb-11 border-t border-ink-gold/15 pt-7">
+          <p className="mb-1 text-[13.5px] font-medium text-ink-text/90">
+            Attach a file <span className="text-ink-muted-dim">(optional)</span>
+          </p>
+          <p className="mb-3.5 text-[13px] leading-[1.6] text-ink-muted-soft">
+            A flyer, a screenshot, a CRM export — we&apos;ll factor it into the
+            personalized plan once you dig into a match. Images, PDF, CSV, or plain
+            text, up to 10MB.
+          </p>
+
+          {uploadedFile ? (
+            <div className="flex items-center justify-between gap-3 rounded-[3px] border border-ink-gold/25 px-3.5 py-2.5">
+              <span className="truncate text-[13px] text-ink-text/90">{uploadedFile.filename}</span>
+              <button
+                type="button"
+                onClick={removeUploadedFile}
+                disabled={loading}
+                className="shrink-0 font-eyebrow text-[11px] uppercase tracking-[0.05em] text-ink-muted transition hover:text-ink-gold disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_FILE_EXTENSIONS}
+                onChange={handleFileSelect}
+                disabled={loading || fileUploading}
+                className="block w-full text-[13px] text-ink-muted file:mr-3.5 file:rounded-[2px] file:border file:border-ink-gold-dim file:bg-transparent file:px-3 file:py-1.5 file:font-eyebrow file:text-[11px] file:uppercase file:tracking-[0.05em] file:text-ink-gold file:transition hover:file:bg-ink-gold/10 disabled:opacity-50"
+              />
+              {fileUploading && (
+                <p className="mt-2 text-[11px] text-ink-muted-dim">Uploading…</p>
+              )}
+            </div>
+          )}
+          {fileError && <p className="mt-2 text-xs text-red-400">{fileError}</p>}
+        </div>
+
         <div className="text-right">
           <button
             type="submit"
-            disabled={loading || !problem.trim() || overLimit || contextOverLimit}
+            disabled={loading || !problem.trim() || overLimit || contextOverLimit || fileUploading}
             className={primaryButtonClasses}
           >
             {loading ? "Checking…" : "Check against database →"}
@@ -289,6 +392,7 @@ export default function DiagnoseForm({
                         sourceType={meta?.sourceType}
                         problem={submittedProblemRef.current}
                         businessContext={submittedContextRef.current}
+                        file={submittedFileRef.current ?? undefined}
                       />
                     </li>
                   );
