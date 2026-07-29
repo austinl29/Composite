@@ -22,6 +22,7 @@ interface CompositeInsight {
   body: string;
   illustrativeExample?: string;
   pathForward: string;
+  quickSummary: string;
 }
 
 interface SynthesizeResult {
@@ -49,6 +50,31 @@ const boxedFieldClasses =
 const primaryButtonClasses =
   "self-start rounded-[2px] bg-ink-gold px-6 py-3.5 font-eyebrow text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:bg-ink-gold-hover disabled:opacity-40";
 
+// A fixed reading measure (~65-75 characters at these font sizes), applied to
+// every long-form synthesis text block (quickSummary, Composite Insight body,
+// hypothetical example, pathForward) — deliberate, not just whatever width
+// the surrounding card happens to be, so it stays readable even if the card
+// widens later.
+const READ_MEASURE_CLASS = "max-w-[38rem]";
+
+// The model is instructed to separate body paragraphs with a blank line, but
+// this also guards the rendering side of "one long undifferentiated block":
+// even well-formatted model output needs each paragraph in its own <p> to
+// actually get visual spacing — a single <p> collapses embedded newlines to
+// nothing, per normal CSS whitespace handling.
+function renderParagraphs(text: string, paragraphClassName: string, keyPrefix: string) {
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const finalParagraphs = paragraphs.length > 0 ? paragraphs : [text];
+  return finalParagraphs.map((p, i) => (
+    <p key={`${keyPrefix}-${i}`} className={paragraphClassName}>
+      {p}
+    </p>
+  ));
+}
+
 export default function MatchDeepDive({
   techniqueId,
   techniqueName,
@@ -72,6 +98,7 @@ export default function MatchDeepDive({
   const [questions, setQuestions] = useState<FollowupQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<SynthesizeResult | null>(null);
+  const [showFullDetail, setShowFullDetail] = useState(false);
 
   const [leadStage, setLeadStage] = useState<LeadStage>("idle");
   const [leadError, setLeadError] = useState<string | null>(null);
@@ -138,6 +165,7 @@ export default function MatchDeepDive({
         return;
       }
       setResult(data);
+      setShowFullDetail(false);
       setStage("result");
     } catch {
       setError("Request failed. Try again.");
@@ -275,45 +303,75 @@ export default function MatchDeepDive({
             match card above; the API response includes it (unchanged from
             /api/diagnose) so callers other than this UI have it available. */}
         {result.compositeInsight ? (
-          <div>
+          <div className={READ_MEASURE_CLASS}>
             <div className="mb-2 flex items-center gap-2.5">
               <span className="relative inline-block h-[13px] w-[13px] shrink-0 rounded-full border-[1.5px] border-ink-indigo-end">
                 <span className="absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-indigo-end" />
               </span>
               <span className="font-display text-[17px] font-medium text-ink-lavender">
-                Composite Insight
+                {result.compositeInsight.title}
               </span>
             </div>
-            <p className="mb-4 max-w-[440px] text-[13px] italic leading-[1.6] text-ink-muted-soft">
-              Our own creative take on your situation — not from the technique library,
-              just Composite reasoning freshly about what you told us.
-            </p>
-            <p className="mb-3 font-display text-base font-medium leading-snug text-ink-heading">
-              {result.compositeInsight.title}
-            </p>
-            <p className="mb-5 font-display text-[17px] leading-[1.75] text-ink-text">
-              {result.compositeInsight.body}
-            </p>
 
-            {result.compositeInsight.illustrativeExample && (
-              <div className="mb-5 border-l border-ink-indigo-end/35 pl-3.5">
-                <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-violet-label">
-                  Hypothetical example
+            <div className="mb-4">
+              {renderParagraphs(
+                result.compositeInsight.quickSummary,
+                "mb-3 text-[15.5px] leading-[1.7] text-ink-text last:mb-0",
+                "quick-summary"
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowFullDetail((s) => !s)}
+              className="mb-1 font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-gold transition hover:text-ink-gold-hover"
+            >
+              {showFullDetail ? "Show less ↑" : "Read the full breakdown →"}
+            </button>
+
+            {showFullDetail && (
+              <div className="mt-5 border-t border-ink-gold/[0.15] pt-6">
+                <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
+                  Composite Insight
                 </p>
-                <p className="text-sm italic leading-[1.65] text-ink-violet-body">
-                  {result.compositeInsight.illustrativeExample}
+                <p className="mb-5 max-w-[440px] text-[13px] italic leading-[1.6] text-ink-muted-soft">
+                  Our own creative take on your situation — not from the technique
+                  library, just Composite reasoning freshly about what you told us.
                 </p>
+
+                <div className="mb-6">
+                  {renderParagraphs(
+                    result.compositeInsight.body,
+                    "mb-4 font-display text-[17px] leading-[1.75] text-ink-text last:mb-0",
+                    "insight-body"
+                  )}
+                </div>
+
+                {result.compositeInsight.illustrativeExample && (
+                  <div className="mb-6 border-l border-ink-indigo-end/35 pl-3.5">
+                    <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-violet-label">
+                      Hypothetical example
+                    </p>
+                    {renderParagraphs(
+                      result.compositeInsight.illustrativeExample,
+                      "mb-2 text-sm italic leading-[1.65] text-ink-violet-body last:mb-0",
+                      "hypothetical"
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <p className="mb-2 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
+                    What building this out could look like
+                  </p>
+                  {renderParagraphs(
+                    result.compositeInsight.pathForward,
+                    "mb-3 text-[14.5px] leading-[1.7] text-ink-muted last:mb-0",
+                    "path-forward"
+                  )}
+                </div>
               </div>
             )}
-
-            <div className="mb-8">
-              <p className="mb-2 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
-                What building this out could look like
-              </p>
-              <p className="text-[14.5px] leading-[1.7] text-ink-muted">
-                {result.compositeInsight.pathForward}
-              </p>
-            </div>
           </div>
         ) : (
           <p className="text-xs text-ink-muted">

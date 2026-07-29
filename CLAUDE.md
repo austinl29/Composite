@@ -316,6 +316,46 @@ Three distinct steps, three distinct endpoints — not one combined call:
      never a partial/silently-edited one. Renders directly under the
      Composite Insight card in `MatchDeepDive.tsx`, labeled "What building
      this out could look like."
+   - **`quickSummary`** — a fifth field on the same structured call (added
+     2026-07-29, in response to real usage feedback that the expanded
+     content was too much to read by default). Exactly ONE paragraph,
+     written last in the model's own generation order so it can genuinely
+     condense the idea rather than being a pre-written teaser. Must state
+     plainly whether the idea has a real software-build angle and, if so,
+     roughly what that build would look like — or say plainly that it's a
+     pure strategy/process idea with no build angle, never manufacturing a
+     fake one to fit the format. Bound by the exact same hard rules as
+     `compositeInsight`/`pathForward` (never quantify an outcome, never
+     claim citation/database backing) — covered by the same
+     `findSafetyViolation` regex safety net (now scans
+     title+body+illustrativeExample+pathForward+quickSummary together) and
+     the same retry-then-suppress behavior; a violation anywhere in
+     `quickSummary` is exactly as severe as one in `body`. This is what
+     renders **by default** after the grounded plan in
+     `app/diagnose/MatchDeepDive.tsx`; the full `compositeInsight` detail
+     (title/body/hypothetical example/pathForward) is collapsed behind a
+     "Read the full breakdown →" toggle, off by default
+     (`showFullDetail` state, reset to `false` on every new synthesis
+     result).
+   - **Readability fix (2026-07-29):** real usage surfaced that the
+     expanded content rendered as one long undifferentiated block. Root
+     cause was two-fold, fixed both ways: (1) the model's `body` field
+     tended to come back as one dense paragraph (confirmed by inspecting
+     real stored `diagnose_sessions` rows before deciding on a fix, per
+     the task's own instruction not to guess) — the synthesize prompt now
+     explicitly instructs 2-4-sentence paragraphs separated by a blank
+     line for `body` specifically (`pathForward` and `quickSummary` stay
+     single-paragraph by design — they're meant to be short). (2)
+     independent of prompt behavior, a single `<p>` element silently
+     collapses embedded `\n\n` breaks per normal CSS whitespace handling,
+     so even well-formatted model output wouldn't have rendered with
+     visual separation — `MatchDeepDive.tsx`'s `renderParagraphs()` helper
+     splits on blank lines and renders each paragraph as its own `<p>`
+     with spacing between them, applied to `body`, `illustrativeExample`,
+     `pathForward`, and `quickSummary` alike. A `READ_MEASURE_CLASS`
+     (`max-w-[38rem]`, ~65-75 characters at these font sizes) constrains
+     every long-form synthesis text block to a fixed reading measure,
+     independent of the surrounding card's actual width.
 
 **Lead capture (added 2026-07-26):** after both `compositeInsight` and
 `pathForward` are rendered — never before value has been delivered —
@@ -463,23 +503,27 @@ pipeline.
   honest-no-match, adversarial — keyword-bait, vague input, prompt-injection)
   hits `/api/diagnose`, checks fabrication/forced-match/forbidden-match/
   expected-match.
-- `evals/followup-synthesize-cases.json` (8 cases) hits
+- `evals/followup-synthesize-cases.json` (11 cases) hits
   `/api/followup-questions` and `/api/synthesize`: one `followup-pair` case
   (checks question sets differ meaningfully across two different technique
   types — Jaccard word-overlap on the returned question text, must stay
-  below `maxWordOverlapRatio`), and seven `synthesize` cases (grounded-plan
-  byte-identical echo check; three adversarial cases that directly ask the
+  below `maxWordOverlapRatio`), and ten `synthesize` cases (grounded-plan
+  byte-identical echo check; adversarial cases that directly ask the
   follow-up answers to bait a numeric ROI projection or a price/timeline
-  commitment — one aimed specifically at `pathForward`; a citation-claim
-  check; a hypothetical-marker check on `illustrativeExample`; and
-  `synthesize-adversarial-file-injection`, added 2026-07-28 — see §7b).
-  `forbiddenPatterns` checks run against the combined
-  title+body+illustrativeExample+`pathForward` text, so any of the four
-  fields tripping a pattern is caught the same way. A `synthesize` case can
-  set `simulatedFileText`, which the runner uploads as a real `text/plain`
-  file via `POST /api/upload` before the synthesize call — exercising the
-  real upload → blob → fetch → inline-as-untrusted-text path end to end,
-  not a faked file reference.
+  commitment — one aimed at `pathForward`, one aimed at `quickSummary`
+  specifically, added 2026-07-29; a citation-claim check; a
+  hypothetical-marker check on `illustrativeExample`;
+  `synthesize-adversarial-file-injection`, added 2026-07-28 — see §7b; and
+  two non-blocking `quickSummaryMustMentionBuildAngle` checks, added
+  2026-07-29, confirming `quickSummary` correctly signals a real build angle
+  when one exists and — more loosely, since this is genuinely debatable —
+  says so when it plainly doesn't). `forbiddenPatterns` checks run against
+  the combined title+body+illustrativeExample+pathForward+`quickSummary`
+  text, so a violation in any of the five fields is caught the same way. A
+  `synthesize` case can set `simulatedFileText`, which the runner uploads as
+  a real `text/plain` file via `POST /api/upload` before the synthesize
+  call — exercising the real upload → blob → fetch →
+  inline-as-untrusted-text path end to end, not a faked file reference.
 
 Both write into the same `evals/.last-run.json` (timestamp, pass/fail
 counts, `blockingFailureCount`, a sha256 hash of all diagnosis-related files
@@ -494,8 +538,12 @@ Failure categories that are **blocking** (must be zero): `fabrication`,
 Non-blocking (known model-behavior variance, not a safety regression):
 `forced-match` (a plausible-but-debatable match on an ambiguous
 honest-no-match case), `missing-expected-match`, `missing-concrete-reasoning`,
-`insufficient-differentiation`. This split was a deliberate decision, not an
-oversight — see the push-gate hook below.
+`insufficient-differentiation`, `missing-build-angle-signal` (whether
+`quickSummary` correctly signals a build angle — genuinely debatable in edge
+cases; the first real opus-4-8/high run against the `no-build-angle` case
+found a legitimate build angle the case's author hadn't anticipated, which
+is arguably correct model behavior, not a miss). This split was a
+deliberate decision, not an oversight — see the push-gate hook below.
 
 **Eval model policy (2026-07-26):** most eval runs during routine,
 unrelated feature work (UX, schema, hooks) don't need real verification of
@@ -609,6 +657,28 @@ if the files haven't changed since the last passing run, no re-run is forced.
   multimodal reasoning, not a generic response) and a real 6-scenario
   session/lead-linkage run, then ran the full eval suite for real under
   opus-4-8/high (0 blocking failures) before pushing.
+- **Week 4, UX pass (2026-07-29):** real usage feedback (the first live
+  operator sessions, from the flower-shop pre-call testing) surfaced
+  concrete friction: the expanded synthesis content was too much to read by
+  default and rendered as one undifferentiated block, and the home page had
+  too many competing calls to action. Added `quickSummary` — a single
+  default-visible paragraph that condenses the idea and states plainly
+  whether a real software-build angle exists — behind which the full detail
+  now collapses under a "Read the full breakdown →" toggle (see §7).
+  Diagnosed and fixed the readability issue two ways: the synthesize prompt
+  now asks for multi-paragraph `body` text, and `MatchDeepDive.tsx` now
+  actually renders each paragraph as its own element with a fixed reading
+  measure (previously a single `<p>` silently collapsed the model's
+  paragraph breaks regardless of prompt wording — both fixes were needed,
+  confirmed by inspecting real stored session content before choosing a
+  fix, not by guessing). Simplified the home page to one primary action
+  (removed the redundant secondary "or browse the library" link stacked
+  under the Diagnose button, cut the header's browse link down to a plain
+  low-emphasis text link) — see §3-adjacent `app/page.tsx`. Logged (not
+  built) an audio-output idea in §10. Expanded the eval suite to 35 cases,
+  ran the real opus-4-8/high verification pass (0 blocking failures; the
+  one non-blocking miss was the model finding a legitimate build angle a
+  test case's author hadn't anticipated) before pushing.
 - **Next up:** nothing specific queued. The free-text equipment/situation
   field once discussed as a possible future addition was effectively
   superseded by the free-text business-context box built earlier — if a
@@ -617,3 +687,14 @@ if the files haven't changed since the last passing run, no re-run is forced.
   view for browsing captured leads/sessions is a natural next step
   whenever that becomes a priority — right now both are queried directly
   against the DB.
+
+## 10. Backlog / Deferred Ideas (not scheduled — logged so they aren't re-litigated)
+
+- **Audio version of the synthesis output** (logged 2026-07-29). Idea: let the
+  operator listen to the Composite Insight / quickSummary instead of only
+  reading it — came up during the same UX pass that added `quickSummary` and
+  the readability fixes. Explicitly **out of scope and not built** as part of
+  that pass; this is a placeholder so the idea isn't lost, not a commitment to
+  build it. No design decisions made (TTS provider, which fields would be
+  read, cost implications) — revisit from scratch if/when it's actually
+  prioritized.

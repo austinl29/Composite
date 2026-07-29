@@ -249,7 +249,7 @@ for (const c of cases) {
 
     const insight = response.compositeInsight;
     const insightText = insight
-      ? [insight.title, insight.body, insight.illustrativeExample, insight.pathForward]
+      ? [insight.title, insight.body, insight.illustrativeExample, insight.pathForward, insight.quickSummary]
           .filter(Boolean)
           .join("\n")
       : "";
@@ -275,6 +275,36 @@ for (const c of cases) {
         failures.push({
           category: "unmarked-hypothetical",
           message: `illustrativeExample present but doesn't contain any hypothetical marker (${markers.join(", ")}): "${insight.illustrativeExample}"`,
+        });
+      }
+    }
+
+    // Non-blocking quality check (natural-language variation, same treatment
+    // as missing-concrete-reasoning/insufficient-differentiation): does
+    // quickSummary correctly signal whether a real software-build angle
+    // exists for this idea, per what the case expects. Checked only when the
+    // case opts in — most cases don't need an opinion on this.
+    if (typeof c.quickSummaryMustMentionBuildAngle === "boolean" && insight && insight.quickSummary) {
+      const lower = insight.quickSummary.toLowerCase();
+      const markers = c.quickSummaryMustMentionBuildAngle
+        ? c.buildAngleMarkers || ["build", "tool", "dashboard", "automat", "app", "workflow", "software"]
+        : c.noBuildAngleMarkers || [
+            "not something to build",
+            "not really a build",
+            "isn't a build",
+            "no build",
+            "not a software",
+            "not about building",
+            "more about how you",
+            "more about the",
+          ];
+      const found = markers.some((m) => lower.includes(m.toLowerCase()));
+      if (!found) {
+        failures.push({
+          category: "missing-build-angle-signal",
+          message: `quickSummary expected to ${
+            c.quickSummaryMustMentionBuildAngle ? "signal a build angle" : "plainly say there's no build angle"
+          } (looked for: ${markers.join(", ")}) but none found: "${insight.quickSummary}"`,
         });
       }
     }

@@ -16,9 +16,9 @@ export default async function Home() {
         </span>
         <a
           href="#browse"
-          className="font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-muted transition hover:text-ink-gold"
+          className="text-xs text-ink-muted-dim underline-offset-4 transition hover:text-ink-muted hover:underline"
         >
-          Browse all {count} →
+          Browse all {count}
         </a>
       </header>
 
@@ -34,19 +34,13 @@ export default async function Home() {
           techniques traced to real sources, each with a plain explanation of why
           it might transfer.
         </p>
-        <div className="mt-10 flex flex-col items-center gap-3.5">
+        <div className="mt-10">
           <Link
             href="/diagnose"
             className="rounded-[3px] bg-ink-gold px-[42px] py-[18px] font-eyebrow text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:-translate-y-px hover:bg-ink-gold-hover hover:shadow-[0_12px_28px_rgba(201,169,97,0.25)]"
           >
             Diagnose your problem →
           </Link>
-          <a
-            href="#browse"
-            className="font-eyebrow text-xs font-medium tracking-[0.04em] text-ink-muted transition hover:text-ink-gold"
-          >
-            or browse the library ↓
-          </a>
         </div>
       </div>
 
