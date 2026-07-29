@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-07-29T12:56:11.772Z",
-  "baseUrl": "http://localhost:3000",
+  "timestamp": "2026-07-29T23:35:53.242Z",
+  "baseUrl": "https://composite-kappa.vercel.app",
   "totalCases": 36,
-  "passCount": 29,
-  "failCount": 7,
+  "passCount": 28,
+  "failCount": 8,
   "blockingFailureCount": 0,
   "blockingFailures": [],
   "fileHash": "ef8230a52c83372ec772287a35c06818a59cf8040a87ec9d3ca8b97fd9101699",
