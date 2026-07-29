@@ -429,6 +429,32 @@ then cleaned up, since it was synthetic test data, not real operator
 usage. The table is empty in production as of this write-up and will
 populate naturally as the app sees real traffic.
 
+**Searching session history (`scripts/search-sessions.mjs`, added 2026-07-29):**
+a local, read-only research script for pulling `diagnose_sessions` by keyword
+and date range before drafting a proposal for a specific prospect — e.g. every
+flower-shop-related session before pitching a florist. Not exposed anywhere in
+the live app; run on demand via Claude Code / node. Never writes to any table.
+
+```
+node --env-file=.env.local scripts/search-sessions.mjs --keyword flower
+node --env-file=.env.local scripts/search-sessions.mjs --keyword hvac --after 2026-07-01 --before 2026-07-31
+node --env-file=.env.local scripts/search-sessions.mjs --keyword flower --leads-only
+```
+
+`--keyword` (required) does a case-insensitive `ILIKE` substring match across
+`problem`, `business_context`, `technique_name`, and the matched technique's
+current `mechanism` (joined live from `techniques` by `technique_id`) — plain
+substring matching, no fuzzy search or ranking. `--after`/`--before` are
+`YYYY-MM-DD` and filter on `created_at::date`. `--leads-only` restricts to
+sessions with a matching `leads.session_id`. Output: a summary line (count
+matched, how many converted, distinct technique names) followed by each
+session newest-first — date, problem, business context, matched
+technique/confidence, a truncated grounded-plan snippet, the full Composite
+Insight and pathForward text (the part worth reading closely for proposal
+drafting), and lead status (name/email if converted). Not on the push-gate
+hook's watched-file list — it's a research tool, not part of the diagnosis
+pipeline.
+
 ## 8. Eval Suite & Push-Gate Hook (critical)
 
 **Eval suite:** two case files, both loaded and run in one invocation of
