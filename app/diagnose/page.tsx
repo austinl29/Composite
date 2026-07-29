@@ -10,7 +10,10 @@ export default async function DiagnosePage() {
 
   // Same fetch already returns techniques ordered by name (see
   // lib/techniques.ts) — reused here as the "№ NN / total" library index
-  // shown on each match card, rather than a separate query.
+  // shown on each match card, plus the mechanism/evidence/sourceUrl fields
+  // MatchDeepDive's "YOUR MATCH" card renders. Purely client-side prop
+  // plumbing from data already fetched server-side — no new API route or
+  // request/response shape involved.
   const techniqueMetaById = Object.fromEntries(
     techniques.map((t, i) => [
       t.id,
@@ -18,43 +21,40 @@ export default async function DiagnosePage() {
         sourceType: t.sourceType,
         sourceIndustry: t.sourceIndustry,
         sourceCompany: t.sourceCompany,
+        mechanism: t.mechanism,
+        evidence: t.evidence,
+        sourceUrl: t.sourceUrl,
         index: i + 1,
       },
     ])
   );
 
   return (
-    <div className="min-h-full bg-ink-bg font-editorial text-ink-text">
-      <header className="flex items-center justify-between border-b border-ink-gold/15 px-6 py-[26px] sm:px-12">
-        <Link
-          href="/"
-          className="font-display text-lg font-medium tracking-[0.01em] text-ink-heading"
-        >
-          Composite
-        </Link>
-        <Link
-          href="/"
-          className="font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-muted transition hover:text-ink-gold"
-        >
-          ← All techniques
+    <div className="relative min-h-full flex-1 bg-ink-bg font-editorial text-ink-text">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 600px 400px at 50% 0%, rgba(201,169,97,.1), transparent 70%)",
+        }}
+      />
+
+      <header className="relative flex items-center justify-between border-b border-ink-border px-6 py-[22px] sm:px-12">
+        <Link href="/" className="font-display text-lg font-semibold text-ink-heading">
+          ← Composite
         </Link>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[640px] flex-col px-6 pb-[130px] pt-[70px] sm:px-12 sm:pt-[100px]">
-        <p className="font-eyebrow text-[11px] font-medium uppercase tracking-[0.14em] text-ink-gold-dim">
-          Diagnose
-        </p>
-        <h1 className="mt-5 font-display text-3xl font-normal leading-[1.35] text-ink-heading-hero sm:text-4xl">
-          Describe what&apos;s going on in your business.
+      <div className="relative mx-auto flex w-full max-w-[640px] flex-col px-6 pb-[130px] pt-14 sm:px-12 sm:pt-20">
+        <h1 className="font-display text-3xl font-medium leading-[1.3] text-ink-heading-hero sm:text-[32px]">
+          What&apos;s the problem?
         </h1>
-        <p className="mt-[18px] max-w-[540px] text-base leading-[1.65] text-ink-muted">
-          We&apos;ll check it against {count}{" "}
-          techniques traced to real sources. Each match comes with a
-          confidence level and a plain explanation of why it might transfer —
-          and if nothing genuinely fits, we&apos;ll tell you that too.
+        <p className="mt-2.5 text-[14px] leading-[1.6] text-ink-muted">
+          Describe it in your own words. No forms, no jargon. We&apos;ll check it
+          against {count} techniques traced to real sources.
         </p>
 
-        <div className="mt-12">
+        <div className="mt-9">
           <DiagnoseForm techniqueMetaById={techniqueMetaById} techniqueCount={count} />
         </div>
       </div>

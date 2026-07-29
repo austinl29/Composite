@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Technique } from "@/types/technique";
+import { SOURCE_TYPE_LABELS } from "@/lib/sourceTypeLabels";
 
 export default function TechniqueBrowser({ techniques }: { techniques: Technique[] }) {
   const [vertical, setVertical] = useState("all");
@@ -30,7 +31,7 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
   // option regardless of container width. The dropdown popup itself still
   // shows full option text; only the closed box is capped.
   const selectClasses =
-    "min-w-0 max-w-[170px] truncate rounded-[2px] border border-ink-gold/30 bg-transparent px-3.5 py-[9px] font-eyebrow text-xs text-ink-muted outline-none sm:max-w-none";
+    "min-w-0 max-w-[170px] truncate rounded-[7px] border border-ink-gold-border bg-white/[0.03] px-3.5 py-[9px] font-eyebrow text-[11px] font-medium text-ink-text/80 outline-none sm:max-w-none";
 
   // problemType is a free-text DB column, not a fixed enum like sourceType,
   // but its values are stored kebab-case (e.g. "leads-go-cold-before-
@@ -43,20 +44,15 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
   }
 
   return (
-    <div
-      id="browse"
-      className="mx-auto w-full max-w-[1040px] scroll-mt-6 px-6 pb-[110px] sm:px-12"
-    >
-      <div className="mb-14 h-px bg-ink-gold/[0.18]" />
-
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+    <div className="mx-auto w-full max-w-[1180px] px-6 pb-[110px] pt-12 sm:px-12">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-5 border-b border-ink-border pb-5">
         <div>
-          <p className="mb-2 font-eyebrow text-[11px] font-medium uppercase tracking-[0.12em] text-ink-gold-dim">
-            Browse the library
+          <p className="mb-1.5 font-eyebrow text-[10px] font-semibold tracking-[0.1em] text-ink-gold">
+            BROWSE THE LIBRARY
           </p>
-          <h2 className="font-display text-2xl font-normal text-ink-heading">
+          <h1 className="font-display text-2xl font-medium text-ink-heading">
             All {techniques.length} techniques
-          </h2>
+          </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <select
@@ -85,51 +81,41 @@ export default function TechniqueBrowser({ techniques }: { techniques: Technique
             ))}
           </select>
 
-          <span className="font-eyebrow text-xs text-ink-muted-dim">
+          <span className="font-eyebrow text-[10.5px] text-ink-muted-dim">
             {filtered.length} of {techniques.length}
           </span>
         </div>
       </div>
 
-      <ul>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((t) => (
-          <li key={t.id} className="border-b border-ink-gold/[0.12]">
-            <Link
-              href={`/techniques/${t.id}`}
-              className="flex flex-col justify-between gap-2 py-[22px] sm:flex-row sm:gap-7"
-            >
-              <div className="shrink-0 sm:w-[300px]">
-                <h3 className="font-display text-base font-medium leading-snug text-ink-heading">
-                  {t.name}
-                </h3>
-                <p className="mt-1 text-[12.5px] italic leading-5 text-ink-muted-soft">
-                  {t.sourceIndustry}
-                  {t.sourceCompany ? ` — ${t.sourceCompany}` : ""}
-                </p>
-              </div>
-              <p className="flex-1 text-[13.5px] leading-[1.6] text-ink-muted sm:max-w-[420px]">
-                {t.mechanism}
-              </p>
-              <div className="shrink-0 font-eyebrow text-[11px] text-ink-muted-dim sm:w-[140px] sm:text-right">
-                {humanizeSlug(t.problemType)}
-              </div>
-            </Link>
-          </li>
+          <Link
+            key={t.id}
+            href={`/techniques/${t.id}`}
+            className="flex flex-col gap-2.5 rounded-xl border border-ink-border bg-white/[0.02] p-[18px] transition hover:border-ink-gold-border"
+          >
+            <span className="badge-verified self-start px-[7px] py-[3px] text-[8.5px]">
+              {SOURCE_TYPE_LABELS[t.sourceType]}
+            </span>
+            <span className="font-eyebrow text-[9px] font-medium tracking-[0.04em] text-ink-muted-dim">
+              {humanizeSlug(t.problemType).toUpperCase()}
+            </span>
+            <span className="font-display text-base leading-[1.3] text-ink-heading">{t.name}</span>
+            <p className="text-[11.5px] leading-[1.5] text-ink-muted">
+              From {t.sourceIndustry}
+              {t.sourceCompany ? ` (${t.sourceCompany})` : ""} →{" "}
+              {t.targetVerticals.slice(0, 2).join(", ")}
+            </p>
+            <span className="mt-1 font-eyebrow text-[10.5px] font-medium text-ink-gold">
+              View technique →
+            </span>
+          </Link>
         ))}
-      </ul>
+      </div>
 
       {filtered.length === 0 && (
         <p className="py-8 text-sm text-ink-muted">No techniques match these filters.</p>
       )}
-
-      <div className="mt-9 text-center">
-        <a
-          href="#browse"
-          className="font-eyebrow text-xs font-medium uppercase tracking-[0.06em] text-ink-muted transition hover:text-ink-gold"
-        >
-          View all {techniques.length} techniques →
-        </a>
-      </div>
     </div>
   );
 }

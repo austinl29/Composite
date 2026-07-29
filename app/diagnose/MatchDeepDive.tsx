@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import type { SourceType } from "@/types/technique";
+import { SOURCE_TYPE_LABELS } from "@/lib/sourceTypeLabels";
 
 interface FollowupQuestion {
   id: string;
@@ -42,13 +44,10 @@ type Stage = "idle" | "loading-questions" | "questions" | "loading-synthesis" | 
 type LeadStage = "idle" | "submitting" | "submitted";
 
 const underlineFieldClasses =
-  "w-full border-b border-ink-gold/35 bg-transparent px-0.5 py-2.5 text-sm text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
+  "w-full rounded-[8px] border border-ink-border-soft bg-white/[0.03] px-3.5 py-3 text-[13px] text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold/50 disabled:opacity-60";
 
 const boxedFieldClasses =
-  "w-full rounded-[3px] border border-ink-gold/30 bg-transparent px-3 py-2 text-sm text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
-
-const primaryButtonClasses =
-  "self-start rounded-[2px] bg-ink-gold px-6 py-3.5 font-eyebrow text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:bg-ink-gold-hover disabled:opacity-40";
+  "w-full rounded-[8px] border border-ink-border-soft bg-white/[0.03] px-3.5 py-2.5 text-sm text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold/50 disabled:opacity-60";
 
 // A fixed reading measure (~65-75 characters at these font sizes), applied to
 // every long-form synthesis text block (quickSummary, Composite Insight body,
@@ -80,6 +79,10 @@ export default function MatchDeepDive({
   techniqueName,
   confidence,
   explanation,
+  sourceType,
+  mechanism,
+  evidence,
+  sourceUrl,
   problem,
   businessContext,
   file,
@@ -88,7 +91,10 @@ export default function MatchDeepDive({
   techniqueName: string;
   confidence: "strong" | "moderate" | "weak";
   explanation: string;
-  sourceType?: string;
+  sourceType?: SourceType;
+  mechanism?: string;
+  evidence?: string;
+  sourceUrl?: string | null;
   problem: string;
   businessContext: string;
   file?: UploadedFile;
@@ -224,11 +230,7 @@ export default function MatchDeepDive({
     return (
       <div className="mt-5">
         {error && <p className="mb-2 text-sm text-red-400">{error}</p>}
-        <button
-          type="button"
-          onClick={startDeepDive}
-          className="rounded-[3px] border border-ink-gold-dim px-3.5 py-2 font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-gold transition hover:bg-ink-gold/10"
-        >
+        <button type="button" onClick={startDeepDive} className="btn-gold-outline px-4 py-2.5 text-[11px]">
           Get a personalized plan →
         </button>
       </div>
@@ -237,7 +239,7 @@ export default function MatchDeepDive({
 
   if (stage === "loading-questions" || stage === "loading-synthesis") {
     return (
-      <div className="mt-5 flex flex-col items-center gap-2 rounded-[3px] border border-ink-gold/20 py-6 text-center">
+      <div className="mt-5 flex flex-col items-center gap-2 rounded-xl border border-ink-border py-6 text-center">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-gold/25 border-t-ink-gold" />
         <p className="text-xs text-ink-muted">
           {stage === "loading-questions"
@@ -252,10 +254,10 @@ export default function MatchDeepDive({
     return (
       <form
         onSubmit={submitAnswers}
-        className="mt-5 flex flex-col gap-4 rounded-[3px] border border-ink-gold/20 p-5"
+        className="mt-5 flex flex-col gap-4 rounded-xl border border-ink-border p-5"
       >
-        <p className="text-xs text-ink-muted-soft">
-          A few quick questions to tailor this to your business:
+        <p className="font-eyebrow text-[9.5px] font-semibold tracking-[0.06em] text-ink-muted-dim">
+          A COUPLE QUICK QUESTIONS TO TAILOR THIS
         </p>
         {questions.map((q) => (
           <div key={q.id} className="flex flex-col gap-1.5">
@@ -267,10 +269,10 @@ export default function MatchDeepDive({
                     key={opt}
                     type="button"
                     onClick={() => setAnswers((a) => ({ ...a, [q.id]: opt }))}
-                    className={`rounded-[3px] border px-3 py-1 text-xs transition ${
+                    className={`rounded-full px-3.5 py-2 text-[12px] font-medium transition ${
                       answers[q.id] === opt
-                        ? "border-ink-gold bg-ink-gold text-ink-surface"
-                        : "border-ink-gold/30 text-ink-muted hover:border-ink-gold/60"
+                        ? "border border-ink-gold-border bg-ink-gold-wash text-ink-text"
+                        : "border border-ink-border-soft text-ink-muted hover:border-ink-gold-border"
                     }`}
                   >
                     {opt}
@@ -288,7 +290,7 @@ export default function MatchDeepDive({
           </div>
         ))}
         {error && <p className="text-sm text-red-400">{error}</p>}
-        <button type="submit" disabled={!allAnswered} className={primaryButtonClasses}>
+        <button type="submit" disabled={!allAnswered} className="btn-gold self-start px-6 py-3.5 text-[11px]">
           Build my plan →
         </button>
       </form>
@@ -298,25 +300,47 @@ export default function MatchDeepDive({
   if (stage === "result" && result) {
     return (
       <div className="mt-5 flex flex-col gap-7">
-        {/* The grounded plan is intentionally not re-rendered here — it's the
-            exact same technique/confidence/explanation already shown in the
-            match card above; the API response includes it (unchanged from
-            /api/diagnose) so callers other than this UI have it available. */}
+        {(mechanism || evidence || sourceType) && (
+          <div className="flex flex-col gap-2.5 rounded-xl border border-ink-border p-5">
+            <span className="font-eyebrow text-[9.5px] font-semibold tracking-[0.06em] text-ink-gold">
+              YOUR MATCH
+            </span>
+            {mechanism && (
+              <p className="text-[13px] leading-[1.6] text-ink-text/85">{mechanism}</p>
+            )}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {sourceType && (
+                <span className="badge-verified px-[7px] py-[3px] text-[8.5px]">
+                  {SOURCE_TYPE_LABELS[sourceType]}
+                </span>
+              )}
+              {sourceUrl && (
+                <a
+                  href={sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-eyebrow text-[10.5px] text-ink-muted-dim transition hover:text-ink-gold"
+                >
+                  Source ↗
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
         {result.compositeInsight ? (
           <div className={READ_MEASURE_CLASS}>
-            <div className="mb-2 flex items-center gap-2.5">
-              <span className="relative inline-block h-[13px] w-[13px] shrink-0 rounded-full border-[1.5px] border-ink-indigo-end">
-                <span className="absolute left-1/2 top-1/2 h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink-indigo-end" />
-              </span>
-              <span className="font-display text-[17px] font-medium text-ink-lavender">
-                {result.compositeInsight.title}
-              </span>
-            </div>
+            <span className="font-eyebrow text-[9.5px] font-semibold tracking-[0.06em] text-ink-gold">
+              COMPOSITE INSIGHT
+            </span>
+            <p className="mb-4 mt-1 text-[11px] text-ink-muted-dim">
+              Our own creative take on your situation — not from the technique library.
+            </p>
 
             <div className="mb-4">
               {renderParagraphs(
                 result.compositeInsight.quickSummary,
-                "mb-3 text-[15.5px] leading-[1.7] text-ink-text last:mb-0",
+                "mb-3 text-[15px] leading-[1.7] text-ink-text last:mb-0",
                 "quick-summary"
               )}
             </div>
@@ -324,21 +348,13 @@ export default function MatchDeepDive({
             <button
               type="button"
               onClick={() => setShowFullDetail((s) => !s)}
-              className="mb-1 font-eyebrow text-[11px] font-medium uppercase tracking-[0.06em] text-ink-gold transition hover:text-ink-gold-hover"
+              className="mb-1 font-eyebrow text-[11px] font-semibold tracking-[0.04em] text-ink-gold transition hover:text-ink-gold-hover"
             >
               {showFullDetail ? "Show less ↑" : "Read the full breakdown →"}
             </button>
 
             {showFullDetail && (
-              <div className="mt-5 border-t border-ink-gold/[0.15] pt-6">
-                <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
-                  Composite Insight
-                </p>
-                <p className="mb-5 max-w-[440px] text-[13px] italic leading-[1.6] text-ink-muted-soft">
-                  Our own creative take on your situation — not from the technique
-                  library, just Composite reasoning freshly about what you told us.
-                </p>
-
+              <div className="mt-5 border-t border-ink-border pt-6">
                 <div className="mb-6">
                   {renderParagraphs(
                     result.compositeInsight.body,
@@ -348,25 +364,25 @@ export default function MatchDeepDive({
                 </div>
 
                 {result.compositeInsight.illustrativeExample && (
-                  <div className="mb-6 border-l border-ink-indigo-end/35 pl-3.5">
-                    <p className="mb-1.5 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-violet-label">
-                      Hypothetical example
+                  <div className="mb-6 border-l border-ink-gold-border pl-3.5">
+                    <p className="mb-1.5 font-eyebrow text-[10.5px] font-semibold tracking-[0.06em] text-ink-muted-dim">
+                      HYPOTHETICAL EXAMPLE
                     </p>
                     {renderParagraphs(
                       result.compositeInsight.illustrativeExample,
-                      "mb-2 text-sm italic leading-[1.65] text-ink-violet-body last:mb-0",
+                      "mb-2 text-sm italic leading-[1.65] text-ink-muted last:mb-0",
                       "hypothetical"
                     )}
                   </div>
                 )}
 
                 <div>
-                  <p className="mb-2 font-eyebrow text-[10.5px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
-                    What building this out could look like
+                  <p className="mb-2 font-eyebrow text-[10.5px] font-semibold tracking-[0.06em] text-ink-gold">
+                    WHAT BUILDING THIS OUT COULD LOOK LIKE
                   </p>
                   {renderParagraphs(
                     result.compositeInsight.pathForward,
-                    "mb-3 text-[14.5px] leading-[1.7] text-ink-muted last:mb-0",
+                    "mb-3 text-[14px] leading-[1.7] text-ink-muted last:mb-0",
                     "path-forward"
                   )}
                 </div>
@@ -380,7 +396,7 @@ export default function MatchDeepDive({
           </p>
         )}
 
-        <div className="h-px bg-ink-gold/[0.22]" />
+        <div className="h-px bg-ink-border" />
 
         {leadStage === "submitted" ? (
           <p className="text-sm text-ink-text/90">
@@ -388,18 +404,18 @@ export default function MatchDeepDive({
             talk through scoping this out.
           </p>
         ) : (
-          <form onSubmit={submitLead} className="flex flex-col">
-            <p className="mb-4 font-display text-lg font-medium text-ink-heading">
+          <form onSubmit={submitLead} className="flex flex-col gap-3.5">
+            <p className="font-display text-lg font-medium text-ink-heading">
               Want to scope this out together?
             </p>
-            <div className="mb-4 flex gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <input
                 type="text"
                 required
                 placeholder="Name"
                 value={leadName}
                 onChange={(e) => setLeadName(e.target.value)}
-                className={`flex-1 ${underlineFieldClasses}`}
+                className={underlineFieldClasses}
               />
               <input
                 type="email"
@@ -407,7 +423,7 @@ export default function MatchDeepDive({
                 placeholder="Email"
                 value={leadEmail}
                 onChange={(e) => setLeadEmail(e.target.value)}
-                className={`flex-1 ${underlineFieldClasses}`}
+                className={underlineFieldClasses}
               />
             </div>
             <input
@@ -415,15 +431,15 @@ export default function MatchDeepDive({
               placeholder="Phone (optional)"
               value={leadPhone}
               onChange={(e) => setLeadPhone(e.target.value)}
-              className={`mb-6 ${underlineFieldClasses}`}
+              className={underlineFieldClasses}
             />
-            {leadError && <p className="mb-3 text-sm text-red-400">{leadError}</p>}
+            {leadError && <p className="text-sm text-red-400">{leadError}</p>}
             <button
               type="submit"
               disabled={leadStage === "submitting"}
-              className={primaryButtonClasses}
+              className="btn-gold self-start px-6 py-3.5 text-[12px]"
             >
-              {leadStage === "submitting" ? "Sending…" : "Start the conversation"}
+              {leadStage === "submitting" ? "SENDING…" : "LET'S TALK →"}
             </button>
           </form>
         )}

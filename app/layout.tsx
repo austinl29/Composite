@@ -1,30 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Premium visual redesign (2026-07-29) — navy/gold/verified design system.
+// Newsreader (serif headlines) + JetBrains Mono (labels/eyebrows/buttons),
+// self-hosted via next/font to avoid a Google Fonts <link> layout shift.
+// Body copy uses the system font stack directly (no web font needed) — see
+// font-editorial in globals.css. Scoped via font-display/font-editorial/
+// font-eyebrow utility tokens.
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Editorial type system (2026-07-26 restyle, extended 2026-07-27 to the
-// home page too) — self-hosted via next/font to avoid a Google Fonts
-// <link> layout shift. Scoped via the font-display/font-editorial/
-// font-eyebrow utility tokens in globals.css; the technique-detail page is
-// untouched since it doesn't reference those classes.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  style: ["normal"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -45,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

@@ -8,15 +8,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -25,45 +16,113 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Editorial ledger design system (2026-07-27 redesign, "warm gold-and-ink"
-   handoff — extends the 2026-07-26 restyle's cooler dark-neutral palette
-   into a warmer one). Additive only — doesn't touch --background/
-   --foreground or the default font-sans/font-mono tokens above, so the
-   technique-detail page is unaffected. Scoped via these utility classes:
-   font-display (Fraunces), font-editorial (Inter), font-eyebrow
-   (JetBrains Mono), and the ink-* / indigo-* color tokens. Now used by
-   the home page, /diagnose, and MatchDeepDive. */
+/* Premium visual redesign (2026-07-29) — replaces the earlier "editorial
+   ledger" gold-and-ink palette with a deep navy + gold + verified-sage
+   system. Gold is reserved for primary actions/brand accent only; a
+   separate sage-teal "verified" color is used exclusively for the
+   sourceType credibility badge so "click here" and "this is a verified
+   source" never share a color. Scoped via font-display (Newsreader),
+   font-editorial (system-ui body stack), font-eyebrow (JetBrains Mono),
+   and the ink-* / verified-* color tokens below. */
 @theme inline {
-  --font-display: var(--font-fraunces);
-  --font-editorial: var(--font-inter);
+  --font-display: var(--font-newsreader);
   --font-eyebrow: var(--font-jetbrains-mono);
 }
 
 @theme {
-  --color-ink-bg: #0a0908;
-  --color-ink-surface: #0f0d0a;
-  --color-ink-border: #2a251c;
-  --color-ink-text: #edeae3;
-  --color-ink-heading: #f3f0e9;
-  --color-ink-heading-hero: #f5f1e7;
-  --color-ink-muted: #9a9284;
-  --color-ink-muted-dim: #6b6459;
-  --color-ink-muted-soft: #8f8778;
+  --font-editorial: system-ui, sans-serif;
+
+  --color-ink-bg: oklch(18% 0.03 250);
+  --color-ink-surface: oklch(21% 0.03 250);
+  --color-ink-text: oklch(95% 0.01 90);
+  --color-ink-heading: oklch(95% 0.01 90);
+  --color-ink-heading-hero: oklch(95% 0.01 90);
+  --color-ink-muted: oklch(80% 0.02 90 / 0.6);
+  --color-ink-muted-soft: oklch(80% 0.02 90 / 0.55);
+  --color-ink-muted-dim: oklch(75% 0.02 90 / 0.45);
+
+  --color-ink-border: rgba(255, 255, 255, 0.08);
+  --color-ink-border-soft: rgba(255, 255, 255, 0.12);
+
   --color-ink-gold: #c9a961;
-  --color-ink-gold-dim: #8a7645;
+  --color-ink-gold-dim: rgba(201, 169, 97, 0.4);
   --color-ink-gold-hover: #ddbe79;
-  --color-ink-indigo-start: #6366f1;
-  --color-ink-indigo-end: #8b5cf6;
-  /* Lighter tints of the same indigo/violet hues, for small text only.
-     Kept for any future gradient-text use — the redesigned Composite
-     Insight label (below) uses a solid light lavender instead of gradient
-     text, which sidesteps the contrast problem this was built to fix
-     (measured ~4.1-4.35:1 at 12px against ink-surface, under the 4.5:1 AA
-     minimum for normal text). These measure ~9.2-10:1 if gradient text is
-     used again anywhere. */
-  --color-ink-indigo-text-start: #a5b4fc;
-  --color-ink-indigo-text-end: #c4b5fd;
-  --color-ink-lavender: #efe9fb;
-  --color-ink-violet-label: #9c97e0;
-  --color-ink-violet-body: #a39cd8;
+  --color-ink-gold-border: rgba(201, 169, 97, 0.3);
+  --color-ink-gold-border-soft: rgba(201, 169, 97, 0.28);
+  --color-ink-gold-glow: rgba(201, 169, 97, 0.14);
+  --color-ink-gold-wash: rgba(201, 169, 97, 0.1);
+  --color-ink-gold-tint: rgba(201, 169, 97, 0.05);
+  --color-ink-gold-text-on-gold: #241a04;
+
+  /* Verified/credibility accent — used ONLY for the sourceType badge,
+     never for buttons or links. Deliberately not gold and not a
+     red/yellow/green traffic-light color. */
+  --color-verified: oklch(78% 0.05 175);
+  --color-verified-bg: rgba(159, 196, 184, 0.12);
+  --color-verified-border: rgba(159, 196, 184, 0.4);
+}
+
+/* Reusable component classes — kept here rather than repeated inline
+   across every restyled screen (home, techniques, diagnose, deep dive,
+   technique detail) since several (gradient button, grid texture) can't
+   be expressed as a single Tailwind color token. */
+
+.btn-gold {
+  border: none;
+  cursor: pointer;
+  border-radius: 9px;
+  background: linear-gradient(160deg, #ddc588, #b8955a);
+  color: #241a04;
+  font-family: var(--font-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 8px 20px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+.btn-gold:hover {
+  transform: translateY(-1px);
+}
+.btn-gold:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+.btn-gold-outline {
+  border: 1px solid var(--color-ink-gold-dim);
+  cursor: pointer;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-ink-gold);
+  font-family: var(--font-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background 0.15s ease;
+}
+.btn-gold-outline:hover {
+  background: var(--color-ink-gold-wash);
+}
+.btn-gold-outline:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.grid-texture {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 40px);
+}
+
+.badge-verified {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 5px;
+  border: 1px solid var(--color-verified-border);
+  background: var(--color-verified-bg);
+  color: var(--color-verified);
+  font-family: var(--font-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.06em;
 }

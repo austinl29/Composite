@@ -23,6 +23,9 @@ interface TechniqueMeta {
   sourceType: SourceType;
   sourceIndustry: string;
   sourceCompany: string | null;
+  mechanism: string;
+  evidence: string;
+  sourceUrl: string | null;
   index: number;
 }
 
@@ -63,24 +66,35 @@ const ACCEPTED_FILE_TYPES = [
 ];
 const ACCEPTED_FILE_EXTENSIONS = ".png,.jpg,.jpeg,.webp,.gif,.pdf,.csv,.txt";
 
-const CONFIDENCE_LABEL: Record<Match["confidence"], string> = {
-  strong: "strong confidence",
-  moderate: "moderate confidence",
-  weak: "weak confidence",
+// Display copy only — never touches the underlying strong/moderate/weak
+// enum values used by the diagnose API or eval suite.
+const CONFIDENCE_PILL: Record<
+  Match["confidence"],
+  { label: string; className: string }
+> = {
+  strong: {
+    label: "STRONG FIT",
+    className: "bg-ink-gold text-ink-gold-text-on-gold",
+  },
+  moderate: {
+    label: "WORTH TRYING",
+    className: "border border-ink-gold-dim text-ink-gold",
+  },
+  weak: {
+    label: "POSSIBLE FIT",
+    className: "border border-ink-border-soft text-ink-muted",
+  },
 };
 
 const textareaClasses =
-  "w-full rounded-[3px] border border-ink-gold/30 bg-transparent p-[18px] text-[15px] leading-[1.6] text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold disabled:opacity-60";
-
-const primaryButtonClasses =
-  "rounded-[3px] bg-ink-gold px-8 py-4 font-eyebrow text-xs font-semibold uppercase tracking-[0.08em] text-ink-surface transition hover:-translate-y-px hover:bg-ink-gold-hover hover:shadow-[0_12px_28px_rgba(201,169,97,0.25)] disabled:translate-y-0 disabled:opacity-40 disabled:shadow-none";
+  "w-full rounded-[10px] border border-ink-border-soft bg-white/[0.03] p-4 text-[14.5px] leading-[1.6] text-ink-text outline-none transition placeholder:text-ink-muted-dim focus:border-ink-gold/50 disabled:opacity-60";
 
 function PlusMinusIcon({ open }: { open: boolean }) {
   return (
-    <span className="relative block h-4 w-4 shrink-0">
-      <span className="absolute left-0 top-1/2 h-[1.5px] w-4 -translate-y-1/2 bg-ink-gold-dim" />
+    <span className="relative block h-3.5 w-3.5 shrink-0">
+      <span className="absolute left-0 top-1/2 h-[1.5px] w-3.5 -translate-y-1/2 bg-ink-gold" />
       <span
-        className={`absolute left-1/2 top-0 h-4 w-[1.5px] -translate-x-1/2 bg-ink-gold-dim transition-transform ${
+        className={`absolute left-1/2 top-0 h-3.5 w-[1.5px] -translate-x-1/2 bg-ink-gold transition-transform ${
           open ? "scale-y-0" : "scale-y-100"
         }`}
       />
@@ -200,44 +214,40 @@ export default function DiagnoseForm({
 
   return (
     <div className="flex flex-col gap-10">
-      <form onSubmit={handleSubmit} className="flex flex-col">
-        <p className="mb-2.5 font-eyebrow text-[11px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
-          The problem
-        </p>
-        <textarea
-          value={problem}
-          onChange={(e) => setProblem(e.target.value)}
-          placeholder="e.g. Summer we're slammed, can't keep enough techs, then Nov–Feb we're basically bleeding money just to keep the doors open."
-          rows={5}
-          disabled={loading}
-          className={textareaClasses}
-        />
-        <div className="mb-10 mt-2 flex justify-end">
-          <span
-            className={`font-eyebrow text-[11px] ${
-              overLimit ? "text-red-400" : "text-ink-muted-dim"
-            }`}
-          >
-            {problem.length} / {MAX_LENGTH}
-          </span>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div>
+          <textarea
+            value={problem}
+            onChange={(e) => setProblem(e.target.value)}
+            placeholder="e.g. We get plenty of quote requests but half of them go cold before we ever follow up…"
+            rows={5}
+            disabled={loading}
+            className={textareaClasses}
+          />
+          <div className="mt-2 flex justify-end">
+            <span
+              className={`font-eyebrow text-[10.5px] ${
+                overLimit ? "text-red-400" : "text-ink-muted-dim"
+              }`}
+            >
+              {problem.length} / {MAX_LENGTH}
+            </span>
+          </div>
         </div>
 
-        <div className="mb-11 border-t border-ink-gold/15 pt-7">
+        <div>
           <button
             type="button"
             onClick={() => setShowContext((s) => !s)}
-            className="flex w-full items-center justify-between text-left"
+            className="flex items-center gap-2 font-eyebrow text-[11px] font-medium tracking-[0.03em] text-ink-gold"
           >
-            <span className="text-[13.5px] font-medium text-ink-text/90">
-              Tell us about your business{" "}
-              <span className="text-ink-muted-dim">(optional)</span>
-            </span>
             <PlusMinusIcon open={showContext} />
+            {showContext ? "HIDE BUSINESS CONTEXT" : "ADD BUSINESS CONTEXT (OPTIONAL)"}
           </button>
 
           {showContext && (
-            <div className="mt-3.5 flex flex-col gap-3.5">
-              <p className="text-[13px] leading-[1.6] text-ink-muted-soft">
+            <div className="mt-3.5 flex flex-col gap-2">
+              <p className="text-[12.5px] leading-[1.6] text-ink-muted-soft">
                 Ticket size, crew size, how you get leads — anything that would
                 sharpen the read.
               </p>
@@ -247,10 +257,10 @@ export default function DiagnoseForm({
                 placeholder="Optional context…"
                 rows={3}
                 disabled={loading}
-                className={`${textareaClasses} border-ink-gold/20 text-sm`}
+                className={`${textareaClasses} text-[13.5px]`}
               />
               <span
-                className={`self-end font-eyebrow text-[11px] ${
+                className={`self-end font-eyebrow text-[10.5px] ${
                   contextOverLimit ? "text-red-400" : "text-ink-muted-dim"
                 }`}
               >
@@ -260,59 +270,62 @@ export default function DiagnoseForm({
           )}
         </div>
 
-        <div className="mb-11 border-t border-ink-gold/15 pt-7">
-          <p className="mb-1 text-[13.5px] font-medium text-ink-text/90">
-            Attach a file <span className="text-ink-muted-dim">(optional)</span>
-          </p>
-          <p className="mb-3.5 text-[13px] leading-[1.6] text-ink-muted-soft">
-            A flyer, a screenshot, a CRM export — we&apos;ll factor it into the
-            personalized plan once you dig into a match. Images, PDF, CSV, or plain
-            text, up to 10MB.
-          </p>
-
+        <div className="flex flex-col items-center gap-1.5 rounded-[10px] border-[1.5px] border-dashed border-ink-gold-border p-5 text-center">
           {uploadedFile ? (
-            <div className="flex items-center justify-between gap-3 rounded-[3px] border border-ink-gold/25 px-3.5 py-2.5">
+            <div className="flex w-full items-center justify-between gap-3">
               <span className="truncate text-[13px] text-ink-text/90">{uploadedFile.filename}</span>
               <button
                 type="button"
                 onClick={removeUploadedFile}
                 disabled={loading}
-                className="shrink-0 font-eyebrow text-[11px] uppercase tracking-[0.05em] text-ink-muted transition hover:text-ink-gold disabled:opacity-50"
+                className="shrink-0 font-eyebrow text-[11px] tracking-[0.05em] text-ink-muted transition hover:text-ink-gold disabled:opacity-50"
               >
                 Remove
               </button>
             </div>
           ) : (
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ACCEPTED_FILE_EXTENSIONS}
-                onChange={handleFileSelect}
-                disabled={loading || fileUploading}
-                className="block w-full text-[13px] text-ink-muted file:mr-3.5 file:rounded-[2px] file:border file:border-ink-gold-dim file:bg-transparent file:px-3 file:py-1.5 file:font-eyebrow file:text-[11px] file:uppercase file:tracking-[0.05em] file:text-ink-gold file:transition hover:file:bg-ink-gold/10 disabled:opacity-50"
-              />
+            <>
+              <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] bg-ink-gold-glow font-eyebrow text-[13px] font-semibold text-ink-gold">
+                ↑
+              </span>
+              <label className="cursor-pointer text-[12px] font-medium text-ink-text/70">
+                Drop a flyer, CRM export, or screenshot (optional)
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_FILE_EXTENSIONS}
+                  onChange={handleFileSelect}
+                  disabled={loading || fileUploading}
+                  className="hidden"
+                />
+              </label>
+              <span className="font-eyebrow text-[9.5px] text-ink-muted-dim">
+                .pdf · .png · .jpg · .csv — up to 10MB
+              </span>
               {fileUploading && (
-                <p className="mt-2 text-[11px] text-ink-muted-dim">Uploading…</p>
+                <p className="text-[11px] text-ink-muted-dim">Uploading…</p>
               )}
-            </div>
+            </>
           )}
-          {fileError && <p className="mt-2 text-xs text-red-400">{fileError}</p>}
+          {fileError && <p className="text-xs text-red-400">{fileError}</p>}
         </div>
 
-        <div className="text-right">
+        <div className="flex flex-col items-center gap-2">
           <button
             type="submit"
             disabled={loading || !problem.trim() || overLimit || contextOverLimit || fileUploading}
-            className={primaryButtonClasses}
+            className="btn-gold w-full py-4 text-[12.5px]"
           >
-            {loading ? "Checking…" : "Check against database →"}
+            {loading ? "DIAGNOSING…" : "DIAGNOSE MY PROBLEM →"}
           </button>
+          <span className="font-eyebrow text-[10.5px] text-ink-muted-dim">
+            Takes about 30 seconds. Nothing is shared without your say-so.
+          </span>
         </div>
       </form>
 
       {loading && (
-        <div className="flex flex-col items-center gap-3 rounded-[3px] border border-ink-gold/20 py-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-ink-border py-10 text-center">
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-gold/25 border-t-ink-gold" />
           <p className="text-sm text-ink-muted">
             {LOADING_MESSAGES[loadingMessageIndex]}
@@ -328,12 +341,17 @@ export default function DiagnoseForm({
 
       {!loading && result && (
         <div className="flex flex-col gap-8">
-          <blockquote className="border-l-2 border-ink-gold/20 pl-3 text-xs italic leading-5 text-ink-muted">
-            You described: &ldquo;{submittedProblemRef.current}&rdquo;
-          </blockquote>
+          <div>
+            <h2 className="font-display text-[26px] font-medium leading-[1.3] text-ink-heading">
+              Here&apos;s what&apos;s worth trying.
+            </h2>
+            <p className="mt-2 text-[13.5px] italic leading-[1.6] text-ink-muted">
+              {result.assessment}
+            </p>
+          </div>
 
           {result.matches.length === 0 ? (
-            <div className="rounded-[3px] border border-ink-gold/20 bg-ink-surface p-7">
+            <div className="rounded-xl border border-ink-border bg-white/[0.02] p-7">
               <p className="font-display text-lg font-medium text-ink-heading">
                 Nothing in our current database is a strong fit for this.
               </p>
@@ -342,64 +360,75 @@ export default function DiagnoseForm({
               </p>
             </div>
           ) : (
-            <>
-              <p className="text-sm leading-6 text-ink-muted">{result.assessment}</p>
-              <ul className="flex flex-col gap-8">
-                {result.matches.map((m) => {
-                  const meta = techniqueMetaById[m.techniqueId];
-                  return (
-                    <li
-                      key={m.techniqueId}
-                      className="relative rounded-[3px] border border-ink-gold/20 bg-ink-surface p-8 sm:p-10"
+            <ul className="flex flex-col gap-3.5">
+              {result.matches.map((m, i) => {
+                const meta = techniqueMetaById[m.techniqueId];
+                const featured = i === 0;
+                const pill = CONFIDENCE_PILL[m.confidence];
+                return (
+                  <li
+                    key={m.techniqueId}
+                    className={`rounded-xl p-6 sm:p-7 ${
+                      featured
+                        ? "border border-ink-gold-border bg-ink-gold-tint"
+                        : "border border-ink-border"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block rounded-[5px] px-2 py-[3px] font-eyebrow text-[9px] font-semibold tracking-[0.05em] ${pill.className}`}
                     >
-                      {meta && (
-                        <span className="absolute right-6 top-6 font-eyebrow text-[10px] tracking-[0.08em] text-ink-gold-dim">
-                          № {String(meta.index).padStart(2, "0")} / {techniqueCount}
-                        </span>
-                      )}
+                      {pill.label}
+                    </span>
 
-                      <p className="mb-2.5 font-eyebrow text-[11px] font-medium uppercase tracking-[0.1em] text-ink-gold-dim">
-                        Matched technique · {CONFIDENCE_LABEL[m.confidence]}
+                    <Link
+                      href={`/techniques/${m.techniqueId}`}
+                      className="mt-2.5 block font-display text-[19px] leading-[1.3] text-ink-heading transition hover:text-ink-gold"
+                    >
+                      {m.techniqueName}
+                    </Link>
+
+                    {meta && (
+                      <p className="mt-1.5 font-eyebrow text-[10px] tracking-[0.03em] text-ink-muted-dim">
+                        FROM: {meta.sourceIndustry}
+                        {meta.sourceCompany ? ` (${meta.sourceCompany})` : ""} → APPLIED TO: your business
                       </p>
-                      <Link
-                        href={`/techniques/${m.techniqueId}`}
-                        className="block font-display text-[22px] font-medium leading-[1.3] text-ink-heading transition hover:text-ink-gold"
-                      >
-                        {m.techniqueName}
-                      </Link>
-                      {meta && (
-                        <p className="mb-4 mt-1.5 text-sm italic text-ink-muted-soft">
-                          {meta.sourceIndustry}
-                          {meta.sourceCompany ? ` — ${meta.sourceCompany}` : ""}
-                        </p>
-                      )}
-                      <p className="text-[15.5px] leading-[1.7] text-ink-muted">
-                        {m.explanation}
-                      </p>
+                    )}
 
-                      {meta && (
-                        <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-[3px] border border-ink-gold-dim px-3 py-1.5 font-eyebrow text-[11px] tracking-[0.06em] text-ink-gold">
-                          <span className="h-1.5 w-1.5 rounded-full bg-ink-gold" />
-                          {SOURCE_TYPE_LABELS[meta.sourceType]}
-                        </span>
-                      )}
+                    <p className="mt-2.5 max-w-[520px] text-[13.5px] leading-[1.6] text-ink-muted">
+                      {m.explanation}
+                    </p>
 
-                      <MatchDeepDive
-                        techniqueId={m.techniqueId}
-                        techniqueName={m.techniqueName}
-                        confidence={m.confidence}
-                        explanation={m.explanation}
-                        sourceType={meta?.sourceType}
-                        problem={submittedProblemRef.current}
-                        businessContext={submittedContextRef.current}
-                        file={submittedFileRef.current ?? undefined}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
+                    {meta && (
+                      <span className="badge-verified mt-3.5 px-[7px] py-[3px] text-[8.5px]">
+                        {SOURCE_TYPE_LABELS[meta.sourceType]}
+                      </span>
+                    )}
+
+                    <MatchDeepDive
+                      techniqueId={m.techniqueId}
+                      techniqueName={m.techniqueName}
+                      confidence={m.confidence}
+                      explanation={m.explanation}
+                      sourceType={meta?.sourceType}
+                      mechanism={meta?.mechanism}
+                      evidence={meta?.evidence}
+                      sourceUrl={meta?.sourceUrl}
+                      problem={submittedProblemRef.current}
+                      businessContext={submittedContextRef.current}
+                      file={submittedFileRef.current ?? undefined}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
           )}
+
+          <div className="rounded-[10px] border border-dashed border-ink-border-soft p-4 text-center">
+            <p className="text-[11.5px] leading-[1.5] text-ink-muted-dim">
+              If nothing in the library is a genuine fit, Composite says so honestly
+              — it never forces a match.
+            </p>
+          </div>
         </div>
       )}
     </div>
