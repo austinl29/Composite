@@ -43,6 +43,56 @@ export type FollowupRunOutcome =
   | { ok: true; result: FollowupRunResult }
   | { ok: false; error: string };
 
+// Same failure-mode hardening as lib/synthesize.ts, applied here for
+// consistency even though this call's small schema (2-4 short questions)
+// wasn't the actual cause of the 2026-07-29 truncation incident (measured
+// worst-case output: 471 tokens, well under the 2048 budget) — see
+// SYNTHESIZE_MAX_TOKENS in lib/synthesize.ts for that incident's real
+// numbers. Never surface a raw SDK/parse error to the operator-facing UI.
+const GENERIC_FOLLOWUP_ERROR =
+  "Something went wrong generating your questions. Please try again.";
+
+async function callFollowupModel({
+  content,
+  config,
+}: {
+  content: string | Anthropic.Messages.ContentBlockParam[];
+  config: DiagnoseModelConfig;
+}): Promise<{ ok: true; questions: FollowupQuestion[] } | { ok: false; error: string }> {
+  const client = getAnthropicClient();
+  let response;
+  try {
+    response = await client.messages.parse({
+      model: config.model,
+      max_tokens: 2048,
+      ...(config.supportsAdaptiveReasoning ? { thinking: { type: "adaptive" as const } } : {}),
+      output_config: {
+        format: zodOutputFormat(FollowupSchema),
+        ...(config.supportsAdaptiveReasoning ? { effort: config.effort } : {}),
+      },
+      system: FOLLOWUP_SYSTEM_PROMPT,
+      messages: [{ role: "user", content }],
+    });
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+  }
+
+  if (response.stop_reason === "refusal") {
+    return { ok: false, error: "The model declined to process this request." };
+  }
+  const parsed = response.parsed_output;
+  if (!parsed) {
+    return { ok: false, error: "Failed to parse a structured response from the model." };
+  }
+  const questions: FollowupQuestion[] = parsed.questions.map((q, i) => ({
+    id: `q${i + 1}`,
+    text: q.text,
+    type: q.type,
+    options: q.options,
+  }));
+  return { ok: true, questions };
+}
+
 export async function runFollowupQuestions({
   technique,
   problem,
@@ -79,46 +129,18 @@ export async function runFollowupQuestions({
     ? [{ type: "text", text: textBlock }, ...fileContent.blocks]
     : textBlock;
 
-  const client = getAnthropicClient();
   const startedAt = Date.now();
-  let response;
-  try {
-    response = await client.messages.parse({
-      model: config.model,
-      max_tokens: 2048,
-      ...(config.supportsAdaptiveReasoning ? { thinking: { type: "adaptive" as const } } : {}),
-      output_config: {
-        format: zodOutputFormat(FollowupSchema),
-        ...(config.supportsAdaptiveReasoning ? { effort: config.effort } : {}),
-      },
-      system: FOLLOWUP_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content,
-        },
-      ],
-    });
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : String(err) };
+
+  let attempt = await callFollowupModel({ content, config });
+  if (!attempt.ok) {
+    console.error("[followup] first attempt failed, retrying once:", attempt.error);
+    attempt = await callFollowupModel({ content, config });
   }
+  if (!attempt.ok) {
+    console.error("[followup] retry also failed:", attempt.error);
+    return { ok: false, error: GENERIC_FOLLOWUP_ERROR };
+  }
+
   const latencyMs = Date.now() - startedAt;
-
-  if (response.stop_reason === "refusal") {
-    return { ok: false, error: "The model declined to process this request." };
-  }
-
-  const parsed = response.parsed_output;
-  if (!parsed) {
-    return { ok: false, error: "Failed to parse a structured response from the model." };
-  }
-
-  const questions: FollowupQuestion[] = parsed.questions.map((q, i) => ({
-    id: `q${i + 1}`,
-    text: q.text,
-    type: q.type,
-    options: q.options,
-  }));
-
-  return { ok: true, result: { questions, latencyMs } };
+  return { ok: true, result: { questions: attempt.questions, latencyMs } };
 }

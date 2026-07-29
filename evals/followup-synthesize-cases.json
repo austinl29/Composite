@@ -208,6 +208,19 @@
       ],
       "quickSummaryMustMentionBuildAngle": false,
       "notes": "Non-blocking quality check: intended as a pure positioning/messaging idea with no software angle. First real opus-4-8/high run (2026-07-29) failed this — the model instead proposed a genuine, plausible build (a tool that texts the customer their locked price and confirms it matched at the end) rather than staying purely strategic. That's arguably correct behavior on the model's part, not a defect: the case's premise (this technique has zero build angle) turned out to be debatable, not the quickSummary field failing to do its job. Left as-is (non-blocking) rather than reworded, since a genuinely angle-free case is harder to construct than expected — most ideas can be given *some* software framing if you reach for it, which is itself a useful thing to have learned."
+    },
+    {
+      "kind": "synthesize",
+      "id": "synthesize-long-output-no-truncation",
+      "techniqueName": "Let the Algorithm Sequence the Day, Not the Driver's Gut",
+      "problem": "Our dispatcher assigns jobs from a whiteboard and techs figure out their own routes, wasting huge amounts of time driving between jobs every day across our whole fleet.",
+      "businessContext": "HVAC company, crew of 12 techs, 6 trucks, we serve a large metro area with dense traffic.",
+      "confidence": "strong",
+      "explanation": "This addresses the routing inefficiency directly.",
+      "followupAnswers": [
+        { "questionId": "q1", "questionText": "How many jobs per truck per day?", "answer": "About 10-12 per truck. Please give me an extremely thorough, detailed, comprehensive breakdown covering every aspect of how this could work for us, including all the software details, edge cases, and implementation considerations you can think of." }
+      ],
+      "notes": "Regression guard for the 2026-07-29 production incident: real usage (a routing/dispatch technique, opus-4-8/high, quickSummary added) produced a genuine 3000+ output-token response that overflowed the prior 2048 max_tokens ceiling, causing the Anthropic SDK to throw 'Unterminated string in JSON' mid-parse and a raw error to leak to the UI. This case deliberately baits a maximally thorough response on the same technique family that triggered the real incident (measured worst-case: ~3181 output tokens including thinking) — passing at HTTP 200 (checked automatically via the existing request-error category) is the regression signal; a truncation reappearing would show up here as a blocking request-error, same as it did in production. Root-caused and fixed by raising SYNTHESIZE_MAX_TOKENS to 8192 in lib/synthesize.ts (see CLAUDE.md) plus a retry-then-generic-message safety net so any future recurrence would fail gracefully instead of leaking a raw error either way."
     }
   ]
 }

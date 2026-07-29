@@ -97,6 +97,24 @@ function findSafetyViolation(insight: CompositeInsight): string | null {
   return null;
 }
 
+// Measured against the live API (2026-07-29): a deliberately verbose,
+// worst-case prompt produced a real 3181-output-token response (including
+// thinking tokens, which count against this same budget) once quickSummary
+// was added as a fifth field. The prior 2048 ceiling was already tight
+// before quickSummary and became genuinely insufficient after — the model's
+// JSON output was getting cut off mid-string ("Unterminated string in
+// JSON"), a real production incident, not a hypothetical. 8192 leaves
+// roughly 2.5x headroom above the observed worst case.
+const SYNTHESIZE_MAX_TOKENS = 8192;
+
+// User-facing message for any synthesis failure the operator sees — never
+// the raw SDK/parse-error text (which can include file paths, stack-shaped
+// detail, or JSON-position error internals that have no business being
+// shown to a customer). The real error is always logged server-side via
+// console.error before this is returned, so it's still debuggable.
+const GENERIC_SYNTHESIS_ERROR =
+  "Something went wrong generating your plan. Please try again.";
+
 async function callInsightModel({
   system,
   userContent,
@@ -111,7 +129,7 @@ async function callInsightModel({
   try {
     response = await client.messages.parse({
       model: config.model,
-      max_tokens: 2048,
+      max_tokens: SYNTHESIZE_MAX_TOKENS,
       ...(config.supportsAdaptiveReasoning ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: zodOutputFormat(CompositeInsightSchema),
@@ -132,6 +150,32 @@ async function callInsightModel({
     return { ok: false, error: "Failed to parse a structured response from the model." };
   }
   return { ok: true, insight: parsed };
+}
+
+/**
+ * Wraps callInsightModel with one retry on an outright failure (a thrown
+ * SDK error — including a JSON-parse/truncation failure — or a refusal),
+ * distinct from the safety-violation retry in runSynthesis below, which
+ * operates on a successfully-parsed-but-rule-violating result. If both
+ * attempts fail, the real error is logged server-side and a generic,
+ * honest message is returned instead — this is the only path the
+ * operator-facing UI ever sees for a synthesis failure.
+ */
+async function callInsightModelWithRetry(args: {
+  system: string;
+  userContent: string | Anthropic.Messages.ContentBlockParam[];
+  config: DiagnoseModelConfig;
+}): Promise<{ ok: true; insight: CompositeInsight } | { ok: false; error: string }> {
+  let attempt = await callInsightModel(args);
+  if (!attempt.ok) {
+    console.error("[synthesize] first attempt failed, retrying once:", attempt.error);
+    attempt = await callInsightModel(args);
+  }
+  if (!attempt.ok) {
+    console.error("[synthesize] retry also failed:", attempt.error);
+    return { ok: false, error: GENERIC_SYNTHESIS_ERROR };
+  }
+  return attempt;
 }
 
 export async function runSynthesis({
@@ -196,7 +240,7 @@ export async function runSynthesis({
 
   const startedAt = Date.now();
 
-  let attempt = await callInsightModel({
+  let attempt = await callInsightModelWithRetry({
     system: SYNTHESIZE_SYSTEM_PROMPT,
     userContent: baseUserContent,
     config,
@@ -214,7 +258,7 @@ export async function runSynthesis({
     const retryContent: string | Anthropic.Messages.ContentBlockParam[] = fileContent
       ? [{ type: "text", text: baseUserText }, ...fileContent.blocks, { type: "text", text: correctionText }]
       : `${baseUserText}\n\n${correctionText}`;
-    attempt = await callInsightModel({
+    attempt = await callInsightModelWithRetry({
       system: SYNTHESIZE_SYSTEM_PROMPT,
       userContent: retryContent,
       config,
