@@ -33,6 +33,57 @@ to `main` now triggers a real production deployment automatically; manual
 This replaced the prior not-connected state, and was confirmed working end to
 end with a real push (not just the API config check) the same day.
 
+**Branch workflow (standing practice since 2026-07-29):** now that real
+operators are using Composite live, feature/fix work happens on a branch, not
+directly on `main`. `main` is reserved for what's actually confirmed working.
+
+1. `git checkout -b <descriptive-branch-name>` — work and commit normally.
+2. `git push origin <branch-name>` — this alone triggers a **Vercel Preview
+   Deployment** at its own generated URL
+   (`https://composite-<hash>-compositeideas.vercel.app`), fully separate from
+   production (`composite-kappa.vercel.app`) and from any other branch's
+   preview. No extra setup needed — Preview Deployments are on by default for
+   every git-connected Vercel project; nothing project-specific had to be
+   enabled. Find the URL via `npx vercel ls` (look for `Environment: Preview`)
+   or the PR GitHub creates a link for automatically.
+3. **Preview URLs are protected by Vercel's default Deployment Protection**
+   (SSO auth) — confirmed directly on 2026-07-29: an unauthenticated `curl` or
+   fresh browser session gets redirected to a Vercel login wall, not the app.
+   This is a real, working security boundary, not a bug — it means preview
+   deployments (which can contain in-progress or broken code) aren't publicly
+   reachable the way production is. To test a preview's actual behavior
+   without logging into vercel.com in a browser, the reliable path is running
+   the same code against the real Anthropic/DB APIs from local dev (`node
+   --env-file=.env.local ...` or `EVAL_BASE_URL=http://localhost:3000 node
+   scripts/run-evals.mjs`) — since Vercel's build is deterministic from the
+   same source, a passing local run on the branch's exact commit is strong
+   evidence the preview (built from that same commit) behaves identically.
+   `vercel inspect <preview-url> --logs` (authenticated via the CLI, not the
+   public HTTP layer) still works to confirm which commit a preview actually
+   built and its Ready/Error status, even without opening the URL itself.
+4. The push-gate hook (§8) applies identically to a branch push — it matches
+   any command containing `git push`, regardless of branch, confirmed
+   directly by invoking it against a real branch-push command. A stale/failing
+   eval state blocks pushing to a branch exactly the same way it blocks `main`.
+5. Only merging the branch into `main` (`git checkout main && git merge
+   <branch-name>` — or a GitHub PR, `git push` prints a ready-made PR link for
+   the branch automatically) triggers a real production deployment. Verify the
+   fix on the branch (locally and/or via the preview build's confirmed
+   commit/status) *before* merging — the merge is the point of no return for
+   production, not the push.
+
+No second Vercel project or duplicate database is involved — Preview
+Deployments share the same project and the same Postgres/Blob resources as
+production (same `DATABASE_URL`/`BLOB_READ_WRITE_TOKEN`), which is exactly
+Vercel's intended model here, not a workaround. **Worth knowing:** this means
+previews are isolated at the *code* level (separate URL, separate build,
+production unaffected until merge) but **not** at the *data* level — a
+diagnose session run against a preview URL inserts into the same
+`diagnose_sessions`/`leads` tables production reads from. Fine for the kind
+of API-behavior verification this workflow is for; worth remembering before
+running anything destructive or generating a lot of test data against a
+preview URL.
+
 ## 3. Data Model
 
 `types/technique.ts` — the `Technique` interface:
@@ -356,6 +407,38 @@ Three distinct steps, three distinct endpoints — not one combined call:
      (`max-w-[38rem]`, ~65-75 characters at these font sizes) constrains
      every long-form synthesis text block to a fixed reading measure,
      independent of the surrounding card's actual width.
+   - **Token budget incident (2026-07-29, critical):** adding `quickSummary`
+     as a fifth field caused a real production failure — `max_tokens: 2048`
+     on the synthesis call (`lib/synthesize.ts`) had been left unchanged, and
+     a genuinely thorough real response now needed more room than that,
+     causing the model's JSON output to be cut off mid-string
+     ("Unterminated string in JSON") and fail to parse. Root-caused by
+     reproducing the exact failure directly against the live API (not
+     assumed): a deliberately verbose real request measured **3181 output
+     tokens** (thinking tokens count against the same budget) — comfortably
+     past the old ceiling. Fixed by raising `SYNTHESIZE_MAX_TOKENS` to
+     **8192** (~2.5x headroom above the measured worst case), verified by
+     re-running the exact reproduction case twice more, both completing
+     cleanly at `end_turn`. `lib/followup.ts`'s budget was checked at the
+     same time (measured worst case: 471 tokens against its existing 2048)
+     — confirmed not implicated.
+   - **Never leak a raw error to the operator (critical, same incident):**
+     before this fix, any outright call failure (a thrown SDK error,
+     including this exact truncation case) returned the raw
+     `err.message` — including internal detail like JSON character
+     positions — straight through to the UI, rendered in red text on the
+     page. Both `lib/synthesize.ts` and `lib/followup.ts` now retry once on
+     an outright failure (distinct from the existing safety-violation retry,
+     which operates on a successfully-parsed-but-rule-violating result); if
+     the retry also fails, the real error is logged server-side via
+     `console.error` (still debuggable) and a generic, honest message is
+     returned instead — `"Something went wrong generating your
+     plan/questions. Please try again."` — the only text the operator-facing
+     UI ever shows for a generation failure. Guarded by
+     `evals/followup-synthesize-cases.json`'s
+     `synthesize-long-output-no-truncation` case, which deliberately baits a
+     maximally thorough response on the same technique family that
+     triggered the real incident, as a regression guard.
 
 **Lead capture (added 2026-07-26):** after both `compositeInsight` and
 `pathForward` are rendered — never before value has been delivered —
@@ -503,7 +586,9 @@ pipeline.
   honest-no-match, adversarial — keyword-bait, vague input, prompt-injection)
   hits `/api/diagnose`, checks fabrication/forced-match/forbidden-match/
   expected-match.
-- `evals/followup-synthesize-cases.json` (11 cases) hits
+- `evals/followup-synthesize-cases.json` (12 cases, including
+  `synthesize-long-output-no-truncation` added 2026-07-29 as a regression
+  guard for the token-budget incident — see §7) hits
   `/api/followup-questions` and `/api/synthesize`: one `followup-pair` case
   (checks question sets differ meaningfully across two different technique
   types — Jaccard word-overlap on the returned question text, must stay
@@ -679,6 +764,19 @@ if the files haven't changed since the last passing run, no re-run is forced.
   ran the real opus-4-8/high verification pass (0 blocking failures; the
   one non-blocking miss was the model finding a legitimate build angle a
   test case's author hadn't anticipated) before pushing.
+- **Production incident + branch workflow (2026-07-29, same day):** with
+  real operators now actively using Composite, the `quickSummary` ship above
+  caused a real production failure within hours — a synthesis token-budget
+  truncation (see §7's "Token budget incident" for the full root-cause
+  writeup and fix). Fixed and verified with the real opus-4-8/high pass (0
+  blocking failures, 36 cases). Also established a standing branch → Preview
+  Deployment → merge workflow (§2) specifically because production now has
+  real users on it — this fix itself shipped through that new workflow as
+  its first live test: branch `fix/synthesize-max-tokens-truncation` pushed,
+  a real Preview Deployment confirmed built from that exact branch/commit
+  and status Ready, confirmed separate from and non-disruptive to
+  production (which was still reproducibly running the old, broken code at
+  the time), then merged to `main` only after that confirmation.
 - **Next up:** nothing specific queued. The free-text equipment/situation
   field once discussed as a possible future addition was effectively
   superseded by the free-text business-context box built earlier — if a
