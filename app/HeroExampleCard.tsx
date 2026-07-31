@@ -56,7 +56,7 @@ export default function HeroExampleCard() {
   const example = EXAMPLES[index];
 
   return (
-    <div className="relative flex h-[260px] items-center justify-center">
+    <div className="relative flex h-[260px] items-center justify-start md:justify-center">
       <div
         className="w-[230px] rounded-xl border border-ink-gold-border-soft bg-white/5 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-[10px] transition-all duration-[400ms] ease-out"
         style={{
